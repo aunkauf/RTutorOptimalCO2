@@ -92,6 +92,7 @@ In this exercise we want to find out more about the sectors that are exempted. S
 info("read.dta()") # Run this line (Strg-Enter) to show info
 
 **Task:**
+
 Load the library `foreign` and load the dataset `basicdata.dta` with the `read.dta()`command. Save the data in the variable `basic`. If you need further information, just check the info-box above about the `read.dta()` command. Click `check` after you finished.
 
 ```{r "2_Exempted_Firms__4"}
@@ -104,7 +105,9 @@ info("Variables of interest 1") # Run this line (Strg-Enter) to show info
 
 Before we calculate the averages we need to clean up our data since for some firms we have a missing data problem.
 
-**Task**
+
+**Task:**
+
 Create a new dataset `Ex1` where you remove
 - firms that have no entry for `sec4dig`, i.e. firms that have no NACE four-digit classification
 - firms where `nonmanufacturing` is 1, i.e. firms that are not manufacturing
@@ -121,6 +124,7 @@ Ex1=filter(basic, is.na(sec4dig)==FALSE,is.na(nonmanufacturing)==TRUE,is.na(nins
 Now it's time to group our firms by their NACE four-digit level and calculate the averages and sums. To accomplish this task you will learn about the `transmute()`and `group_by()` routines from the package `dplyr`.
 
 **Task:**
+
 Load the library `dplyr` and group the dataset `Ex1`by its NACE four-digit level stored in `sec4dig` with the `group_by()` command. Save this grouping in the variable `by_nace`.
 If you are not familiar with the `group_by()` command, go and check the info-box below.
 
@@ -133,6 +137,7 @@ info("group_by()") # Run this line (Strg-Enter) to show info
 With the grouping `by_nace` we are able to do calculations for firms of the same group. As said earlier we now want to calculate the mean of CI and TI as well as the sum of installations in each group of our dataset. 
 
 **Task:**
+
 Use the `summarise()` command on your grouping `by_nace ` and calculate the following:
 - the mean of `vv_xxx0` and save it into `CI.mean`. Add `na.rm=TRUE` in the mean command.
 - the mean of `tt_xxx0` and save in into `TI.mean`. Add `na.rm=TRUE` in the mean command.
@@ -148,9 +153,12 @@ info("summarize()") # Run this line (Strg-Enter) to show info
 
 Let's have a look at what we have calculated so far. Just press `check`.
 
-```{r "2_Exempted_Firms__11"}
-head(NACE)
+```{r "2_Exempted_Firms__11",results='asis'}
+library(stargazer)
+stargazer(NACE[1:3,], type="html",style="aer",summary=FALSE, title="Excerpt of NACE",digits = 4,
+          covariate.labels = c("NACE Code","CI","TI","Installations"),rownames=FALSE)
 ```
+<br>
 
 As you can see, for each NACE four-digit sector we have their means of CI and TI as well as their sum of installations. If you find yourself asking why `sum.installations` is not an even number, keep in mind that a firm may not only produce one type of product and therefore the installation belongs to different NACE four-digit levels.
 Let's look up the values for a specified NACE-sector. For example the NACE 4-digit code `2051` stands for a "Manufacture of explosives". If we want to get the values, you could simply look through the full dataset, but this wouldn't be very efficient. An easier way te get the data is to use the `filter()` command from the package `dplyr` as you have seen earlier. If you're not familiar with this function, check the info-box.
@@ -158,6 +166,7 @@ Let's look up the values for a specified NACE-sector. For example the NACE 4-dig
 info("filter()") # Run this line (Strg-Enter) to show info
 
 **Task:**
+
 Use the `filter()` command to get the values of `CI.mean`, `TI.mean` and `sum.installations` for the sector "Manufacture of explosives" with the NACE four-digit code `2051`.
 
 ```{r "2_Exempted_Firms__13"}
@@ -168,7 +177,8 @@ So the sector `2051: Manufacture of explosives` consists of 17 installations (in
 So let's plot each NACE sector on a graph with TI on the x-axis and CI on the y-axis. Moreover, let each circle be proportional to the number of installations in this sector.
 
 **Task:**
-For this task the code is give, so just press check and get an insight to the data.
+
+For this task the code is given, so just press check and get an insight to the data.
 
 ```{r "2_Exempted_Firms__14"}
 # Load the required package 'ggplot2' from the library
@@ -199,6 +209,7 @@ As we can see there are many NACE sectors located in the lower left corner with 
 If one if these criteria are met, a sector is considered to have risk of carbon leakage. For our regarded sector `2051: Manufacture of explosives` this means no exempting. Now let's add these thresholds to our plot to see if there are many sectors considered to be at a high risk of relocation.
 
 **Task:**
+
 To represent the threshold values, we want to add 2 vertical and 2 horizontal lines to our plot with the two routines `geom_vline` and `geom_hline`. Check the info-box for informations to this routine. Add the following lines to `MyPlot`:
 - A horizontal line with intercept at 30% CI in red
 - A horizontal line with intercept at 5% CI in blue
@@ -229,6 +240,7 @@ Furthermore, since B is a very big group, we want to separate it into two parts:
 Now with this classification set, we can move on to the next exercise and analyze the characteristics of these exempted sectors. Before that, let's conclude this exercise with a quiz.
 
 **Task:** 
+
 You can enter whatever you think is needed to resolve the quiz here.
 
 ```{r "2_Exempted_Firms__19",optional=TRUE}
@@ -247,6 +259,7 @@ As we said in the beginning, the risk of relocation has two different sides: If 
 info("Variables of interest 2") # Run this line (Strg-Enter) to show info
 
 **Task:**
+
 As in Exercise 1 we begin with loading the dataset. Just click check to load it.
 
 ```{r "2_1_Graphical_approa"}
@@ -257,6 +270,7 @@ Dat = read.dta("basicdata.dta")
 Before we calculate the shares each sector has we need to clean up our data in case of missing values. If you are not sure how this works, just check Exercise 1 again.
 
 **Task:**
+
 Manipulate the dataset `Ex1.1` by removing
 - firms where `nonmanufacturing` is 1, i.e. firms that are not manufactoring
 - firms where `notETS` is 1, i.e. firms that are not in the EU ETS
@@ -265,15 +279,16 @@ Manipulate the dataset `Ex1.1` by removing
 - firms where `empBigorbis` is NA, i.e. firms we have no information about their employees
 
 form the original dataset. Use the `filter()` command
+
 ```{r "2_1_Graphical_approa__2"}
 # Enter your code here
-
 ```
 
 Now that our dataset is cleaned up, let's think about the shares. Before we calculate the total shares of each group we need to calculate them on the firm-level. In our dataset we have total numbers about emissions and employees as well as the ratio of the firm in sector (not every firm is only producing in one sector). If we divide these numbers by their total sum, we get the share of each.
 
 
 **Task:**
+
 Divide in the dataset `Ex1.1` each variable `countid`, `empBigorbis` and `surr` by their respective total sum in order to get their shares. Use the `mutate()` command for this task. Save the share of `countid` in `oneOsum`, the share of `empBigorbis` in `empOsum` and the share of `surr` in `surrOsum`.  For more info on the `mutate()`command check the info box below
 
 info("mutate() and transmute()") # Run this line (Strg-Enter) to show info
@@ -286,7 +301,8 @@ info("mutate() and transmute()") # Run this line (Strg-Enter) to show info
 Since we are interested in the shares of each group we established in Exercise 2, we need to group by this classification. The variable `xquad` contains the information about the groups we derived.
 
 **Task:**
-Use the `group_by()` command in order to group the dataset `Ex1.1` by the variable `xquad`. Save the result in the variable `classification`.
+
+Use the `group_by()` command in order to group the dataset `Dat` by the variable `xquad`. Save the result in the variable `classification`.
 
 ```{r "2_1_Graphical_approa__7"}
 # Enter your code here
@@ -295,11 +311,12 @@ Use the `group_by()` command in order to group the dataset `Ex1.1` by the variab
 With this classification set we now can calculate the shares of each group stated in `xquad`. As described our aim is to calculate for each group stated in `xquad` the total share on firms, employees and emissions.
 
 **Task:**
+
 Use the summarize() routine on the grouping `classification`. Calculate the following three variables:
 - `firms`: The sum over the variable `oneOsum`
 - `employees`: The sum over the variable `empOsum`
 - `emission`: The sum over the variable `surrOsum`
-Save it all in the data set `Ex1.1`.
+Save it all in the data set `Groups`.
 
 ```{r "2_1_Graphical_approa__8"}
 # Enter your code here
@@ -307,13 +324,18 @@ Save it all in the data set `Ex1.1`.
 
 So let's have a fist look at what we calculated until now
 
+**Task:**
+
+Just press `check` to see the reults.
+
 ```{r "2_1_Graphical_approa__9"}
-Ex1.1
+Groups
 ```
 
 With the values calculated we can again use the `ggplot()` package to get a visual understanding of the data.
 
 **Task:**
+
 Just execute the code by clicking `check` and have a look at the resulting plot.
 
 ```{r "2_1_Graphical_approa__10"}
@@ -321,7 +343,7 @@ Just execute the code by clicking `check` and have a look at the resulting plot.
 library(ggplot2)
 # We need to `melt` the data because we have now a wide format but 
 # for our plot we need to change that
-DatMelt=melt(Ex1.1,id.vars="xquad")
+DatMelt=melt(Groups,id.vars="xquad")
 # For our barplot we want the different sectors on the x-Axis
 # and their respetive values as the `bar`
 barplot = ggplot(DatMelt,aes(x=xquad,y=value,fill=variable))
@@ -339,6 +361,7 @@ Now this plot verifies the worry we expressed in the beginning of this exercise:
 One approach is the "Optimal Permit Allocation" which idea is "that payments be distributed across firms so as to equalize marginal relocation probabilities, weighted by the damage caused by relocation" (Martin, Muls, Preux, Wagner: 2014) . We will try to apply this idea in the upcoming exercises but for now let's finish this exercise with a quiz.
 
 **Task:**
+
 Enter what you want in this part in order to solve the quiz.
 
 ```{r "2_1_Graphical_approa__11",optional=TRUE}
@@ -372,6 +395,7 @@ Let's investigate this score a little bit before we use it in the model. First, 
 info("Variables of interest 3") # Run this line (Strg-Enter) to show info
 
 **Task:**
+
 As usual we begin with loading the dataset. Just click `edit` and then `check` to load it.
 
 ```{r "3_Vulnerability_scor"}
@@ -382,6 +406,7 @@ Dat = read.dta("basicdata.dta")
 The variable `unique` contains information if a firm has accepted or declined the interview. If the firm accepted, `unique` is 1 and else NA. It is also NA if a firm was sampled twice.
 
 **Task:**
+
 Erase the entries where `unique` is NA and remove the entries where `fimpact_score_clean` is NA. Since you already know how this works the solution is already given
 
 ```{r "3_Vulnerability_scor__2"}
@@ -390,30 +415,32 @@ Dat=filter(Dat,is.na(unique)==FALSE,is.na(fimpact_score_clean)==FALSE)
 
 # Overall characteristics
 
-We want to begin by looking up some characteristics of the firms we interviewed. For this task we want to use the `stargazer`package which allows us to design nice tables out of data and regressions. If you want more information on the `stargazer` package check the info box below.
+We want to begin by looking up some characteristics of the firms we interviewed. For this task we want to use the `stargazer()`command from the package `stargazer` which allows us to design nice tables out of data and regressions as you have seen in exercise 2. If you want more information on the `stargazer` package check the info box below.
 
 info("Stargazer") # Run this line (Strg-Enter) to show info
 
 **Task:**
+
 For this task the code is already given, so just press `check`.
 
-```{r "3_Vulnerability_scor__3"}
-library(stargazer)
+```{r "3_Vulnerability_scor__3",results='asis'}
 characteristics = transmute(Dat, age=company_age_clean, turnover=firmturnover2007_EUR/1000,
                    employees=firmemployees2007,EBIT=earningsbeforeI_T_2007_EUR/1000,
                    shareholder=noshareholders2007, subsidiaries=nosubsidiaries2007)
 
-stargazer(characteristics, type="text",style="aer",
+stargazer(characteristics, type="html",style="aer",
           summary.stat=c("mean","sd","p25","median","p75","n"),digits=0,
           title="Firm Characteristics",
           covariate.labels = c("Age (years)","Turnover (millions EUR)","Number of employees",
                                "EBIT (millions USD)","Number of Shareholders",
                                "Number of subsidiaries"))
 ```
+<br>
 
 We can see that our sample data is nicely spread and as previous said is quite reliable. Let's continue by calculating the overall mean and standard deviation of the VS accross all firms.
 
 **Task:**
+
 Calculate the mean and the standard deviation of `fimpact_score_clean` using the basic commands `mean()` and `sd()`.
 
 ```{r "3_Vulnerability_scor__4"}
@@ -425,6 +452,7 @@ Now this implies a rather low impact of carbon pricing across all partaking firm
 Next let's see if the sample is spread evenly across the considered countries. To do so we need to group our dataset by the variable `country` and calculate the sum over the variable `unique` since this is now 1 for every entry.
 
 **Task:**
+
 Use the `group_by()` command from the dplyr package to group the dataset `Dat` by `country`. Save the result in `by.country`. Uncomment the `summarize(...)` command and run the code.
 
 ```{r "3_Vulnerability_scor__5"}
@@ -440,6 +468,7 @@ Although the UK has an obvious peak in observations we have overall a nice base 
 In this part we want to investigate if there are any major differences in the vulnerability score for different countries. For this task we use the variable `country` in our dataset which represents the origin if each firm. In the previous part we already grouped our dataset by this variable, so we can direct move on to calculate the average VS in each country.
 
 **Task:**
+
 Use the `summarize()` command on the grouping `by.country` to calculate the new variable `VS` which shall be the mean of `fimpact_score_clean`. Save the result into `VS.by.country`.
 
 ```{r "3_Vulnerability_scor__6"}
@@ -449,11 +478,14 @@ Use the `summarize()` command on the grouping `by.country` to calculate the new 
 Now let's have a look at what we calculated so far:
 
 **Task:**
+
 Just click `check` so see the data.
 
-```{r "3_Vulnerability_scor__7"}
-VS.by.country
+```{r "3_Vulnerability_scor__7",results='asis'}
+stargazer(VS.by.country,type="html",summary=FALSE, rownames=FALSE,title= "Average VS for Countrys",
+          covariate.labels = c("Country","VS"), digits = 4)
 ```
+<br>
 
 While a table with the exact values is always right choice, a nice plot is a more vivid approach to look at data. In this case a barplot will be a good choice. In this task we will use the `pirateplot()` routine from the package `yarrr`. If you want to know more about the `pirateplot()` routine be sure to check the info box.
 
@@ -461,6 +493,7 @@ info("pirateplot()") # Run this line (Strg-Enter) to show info
 
 
 **Task:**
+
 Just press `check` and have a look at the resulting plot.
 
 ```{r "3_Vulnerability_scor__9"}
@@ -478,6 +511,7 @@ It seems like firms in Germany, France and Poland are more affected by carbon pr
 Analogously to the previous part we want to find out if some sectors are more affected to carbon pricing than others. For this task our dataset contains the variable `mcetsdig` which assigns different sectors to each firm. Let's see what characteristics `mcetsdig` does have.
 
 **Task:**
+
 Just click `check` and see what`s what.
 
 ```{r "3_Vulnerability_scor__10"}
@@ -486,11 +520,17 @@ Just click `check` and see what`s what.
 Now one might think that the really energy-intensive firms are a lot more vulnerable to carbon-pricing than the others. So let's find out.
 
 **Task:**
+
 Calculate the average vulnerability score for each group in `mcetsdig`. Use again the dataset `Dat` to compute what you need for this task. Save your grouping in `by.sector` and your final calculation in `VS.by.sector` and print it out. Use the same fashion as in the previous exercise.
 
-```{r "3_Vulnerability_scor__11"}
+```{r "3_Vulnerability_scor__11",results='asis'}
 # Enter your code here
+# 
+# and add afterwards 
+# stargazer(VS.by.sector,type="text",summary=FALSE, rownames=FALSE, digits = 4, title= "Average VS for Sectors",
+#          covariate.labels = c("Sector","VS"))
 ```
+<br>
 
 
 Again a nice barplot would be a more convenient choice to investigate the results but this time you need to use the `ggplot()` routine. Check the info box for more information on `ggplot()` and `geom_bar()`.
@@ -498,6 +538,7 @@ Again a nice barplot would be a more convenient choice to investigate the result
 info("ggplot() and geom_bar()") # Run this line (Strg-Enter) to show info
 
 **Task:**
+
 Create a barplot out of the data `VS.by.sector`. To do so save your `ggplot()` command into the variable `barplot.sector` and add the aesthetics `geom_bar()` and `coord_flip()` afterwards.
 
 ```{r "3_Vulnerability_scor__14"}
@@ -510,6 +551,7 @@ As we can see this gives us a slightly different result. Some firms with a high 
 Before we set up our model for the optimal permit allocation we finish this exercise with a quiz.
 
 **Task:**
+
 Enter what you want in this chunk in order to solve the quiz.
 
 ```{r "3_Vulnerability_scor__15",optional=TRUE}
@@ -587,6 +629,7 @@ In this chapter we want to find out if our efforts to optimize the allocation of
 The idea to minimize the permits allocated for free can be seen as the approach to minimize the amount of taxpayers' money allocated to the firms while keeping the risk of relocation at a constant level. This also means that the government could earn additional revenue since a lot more permits would be traded on the market. That being said we need to load the data to get a better insight.
 
 **Task:**
+
 Load the dataset `optimal_firm_done.dta` and assign it to the variable `firm`.
 
 ```{r "5_Exploring_the_Resu"}
@@ -604,6 +647,7 @@ Also we sum up the costs of the permits given out for free in 5 other cases and 
 The difference in the risk level of grandfathering and benchmarking arises through the fact that under benchmarking only around half of the free permits given out under grandfathering where given out, resulting in a higher risk of relocation. This higher risk (either in job losses or emission leakage) gives us a higher cap $\bar{R}$ in the optimisation problem.
 
 **Task:**
+
 Sum up over all the described variables. Save the results in the variables `sum.allo`, `sum.emp.allo`,`sum.co2.allo`,`sum.bench`,`sum.emp.bench` and `sum.emp.bench` accordingly. Use the `summarise()`command for this task and save the result in `cost.min`.
 
 ```{r "5_Exploring_the_Resu__2"}
@@ -613,15 +657,26 @@ Sum up over all the described variables. Save the results in the variables `sum.
 Before we look at what we calculated we want to transform that costs of the permits into shares of the costs of the permits given out under grandfathering. This can easily be done by calculating $share.scenario=\frac{cost.scenario}{cost.reference}*100$
 
 **Task:**
-Divide the dataset by the value of `sum.allo` and multiply all by $100$ to get the shares in percentage. Afterwards print it out.
 
-```{r "5_Exploring_the_Resu__3"}
-# Enter your code here
+Divide the dataset by the value of `sum.allo` and multiply all by $100$ to get the shares in percentage. Afterwards we print it out.
+
+```{r "5_Exploring_the_Resu__3",results='asis'}
+# Uncomment the code lines and fill out the ???
+#cost.min=100*???/???
+
+#stargazer(cost.min[1:3], title="Permits distributed for free (in percent of emissions), Risk level: Grandfathering",
+#          type="html",summary=FALSE, style="aer",rownames=FALSE,digits = 4,
+#          covariate.labels = c("Grandfathering","Objective: Jobs","Objective: CO2"))
+
+#stargazer(cost.min[4:6], title="Permits distributed for free (in percent of emissions), Risk level: Benchmarking",
+#          type="html",summary=FALSE, style="aer",rownames=FALSE,digits = 4,
+#          covariate.labels = c("Benchmarking","Objective: Jobs","Objective: CO2"))
 ```
+<br>
 
-So let's interpret those shares. The first three variables are based on the risk of relocation associated with grandfathering and a firm-level optimization of the free permits. To keep the same level of risk it would be enough to allocate between $14.3$ and $24.5$ percent of the permits given out under grandfathering for free to the firms, depending on our assumptions about the weight of each risk (job loss and carbon leakage), which would be a huge increase in efficiency. 
+So let's interpret the first table. As earlier said, these results are based on the risk of relocation associated with grandfathering and a firm-level optimization of the free permits. To keep the same level of risk as under grandfathering it would be enough to allocate between $14.3$ and $24.5$ percent of the permits given out under grandfathering for free to the firms, depending on our assumptions about the weight of each risk (job loss and carbon leakage), which would be a huge increase in efficiency. 
 
-Now to the other 3 variables: In the benchmarking scenario around $52.3$ percent of the permits that are given out in the grandfathering scenario are given for free. But this shortage raises the overall risk in this scenario and therefore pushes our improvements even further. With the higher threshold for risk we can reduce the amount of free permits to between $1.6$ to $13.0$ percent of the free permits used in the grandfathering scenario.
+Now to the other table: In the benchmarking scenario around $52.3$ percent of the permits that are given out in the grandfathering scenario are given for free. But this shortage raises the overall risk in this scenario and therefore pushes our improvements even further. With the higher threshold for risk we can reduce the amount of free permits to between $1.6$ to $13.0$ percent of the free permits used in the grandfathering scenario.
 That being said we see that there is a quite big opportunity to raise the income of the auctioning with emission permits while not exceeding the risk of carbon leakage or job loss.
 
 
@@ -637,6 +692,7 @@ info("Variables of interest 4") # Run this line (Strg-Enter) to show info
 
 
 **Task:**
+
 Calculate the individual relocation probability for each firm in the grandfathering scenario. The variable `allo` contains the number of free permits given out to each firm in this scenario (the $q_i$). The variables `beta0` and `beta1` contain the estimates for each firm. Use the `mutate()` command for this task, save your calculation in the variable `prob.grand` and you hole dataset in `firm`. 
 
 ```{r "5_Exploring_the_Resu__4"}
@@ -646,7 +702,8 @@ Calculate the individual relocation probability for each firm in the grandfather
 With the relocation probability calculated we need to multiply by the aim of the government. As said we first want to reduce job losses, therefore our $\alpha$ equals 1 and we need to multiply by the level of employment $l_i$ which is the employment at firm i divided by the total sum of employment $\left(l_i = \frac{{\textrm{employment}}_i}{\sum \textrm{employment}_i} \right)$.
 
 **Task:**
-Use again the `mutate()` command to calculate the level of employment $l_i$. Save the result in `level.emp` and save the dataset in firm.
+
+Use again the `mutate()` command to calculate the level of employment $l_i$. Save the result in `level.emp` and save the dataset in `firm`.
 
 ```{r "5_Exploring_the_Resu__5"}
 # Enter your code here
@@ -655,6 +712,7 @@ Use again the `mutate()` command to calculate the level of employment $l_i$. Sav
 In our dataset `firm` we have now for each firm the probability to relocate under grandfathering `prob.grand` and the level of employment `level.emp`. To get the risk associated to the relocation of a firm we need simply to multiply, i.e. $\textrm{relocation risk of firm i} = \textrm{probability to relocate of firm i} \times \textrm{level of employment at firm i}$. Moreover by summing up these risks over all firms we get estimate of the overall risk in a scenario.
 
 **Task:**
+
 Use the `summarize()` command to sum up the risk in the grandfathering scenario. Save it in the variable `risk.grand` and your whole dataset in `risk`. Finally print out the risk.
 
 ```{r "5_Exploring_the_Resu__6"}
@@ -664,6 +722,7 @@ Use the `summarize()` command to sum up the risk in the grandfathering scenario.
 Let's explain this estimate. In the scenario of grandfathering (phase II of the EU ETS) and when the only concern of the government is risk of job losses around $0.04156413 * 100 = 4.16%$ of all jobs of our sample are at risk of relocation. Now we want to compare this to what we can achieve through optimal permit allocation across firms and sectors. To do so we need to load a second dataset which contains the estimates for optimal permit allocation across sectors.
 
 **Task:**
+
 Load the dataset `optimal_sector_done.dta` and save it into the variable `sector`.
 
 ```{r "5_Exploring_the_Resu__7"}
@@ -676,6 +735,7 @@ info("merge()") # Run this line (Strg-Enter) to show info
 
 
 **Task:**
+
 Merge the two datasets by the variable `id` and save the new dataset into `optimal`.
 
 ```{r "5_Exploring_the_Resu__9"}
@@ -685,38 +745,52 @@ Merge the two datasets by the variable `id` and save the new dataset into `optim
 Again we want to calculate the risk of relocation. Due to the merging some variables have slightly changed their names so watch out, but for now we will only look at the two variables `opti_emp_allo_risk` and `sopti_emp_allo_risk` where we optimized the allocation in the grandfathering setup (a slightly higher $\bar{Q}$) across firms and sectors in order to minimize the risk of job loss.
 
 **Task:**
-Calculate the risk arise through optimising across firms and across sectors in the same fashion as above. Be aware that these variables changed their names in the dataset `optimal`:
+
+Calculate the risk that arises through optimising across firms and across sectors in the same fashion as above. Be aware that these variables changed their names in the dataset `optimal`:
 - `emp` is now `emp.x`
 - `beta0` is now `beta0.x`
 - `beta1` is now `beta1.x`
 Try to do it all with only `summarize()` command. Save the firm-level risk in `risk.firm` and the sector-level risk in `risk.sector` and save the hole dataset in `emp.allo`.
 
-```{r "5_Exploring_the_Resu__10"}
-# Enter your code here
+```{r "5_Exploring_the_Resu__10",results='asis'}
+# Uncomment the code lines and fill out the "???"
+#emp.allo=summarize(optimal,
+#                   risk.firm=sum((1/(1+exp(???+beta1.x*???)))*emp.x/sum(???)),
+#                   risk.sector=sum((1/(1+exp(???+beta1.x*???)))*emp.x/sum(???)))
+# We multiply by 100 to get percentage
+#emp.allo=emp.allo*100
+
+#stargazer(emp.allo,title=" Share of employment at risk, Reference: Grandfathering",
+#          type="html", rownames=FALSE,digits = 4,
+#          summary=FALSE, style="aer",covariate.labels = c("Optimal Firm","Optimal Sector"))
 ```
+<br>
 
 For the firm-level optimization we have around $2.93%$ and for sector-level around $3.23%$ of jobs at risk. This means that by the same amount of permits given out as in the grandfathering scenario our average risk drops around one percentage point. Now we want to see if the same holds if the reference scenario is benchmarking which leaves us with a lower amount of permits we can distribute.
 
 **Task:**
+
 This time the code is already given. Just press check and see what we achieved.
 
-```{r "5_Exploring_the_Resu__11"}
+```{r "5_Exploring_the_Resu__11",results='asis'}
 emp.bench=summarize(optimal,risk.bench=sum((1/(1+exp(beta0.x+beta1.x*bench.x)))*emp.x/sum(emp.x)),
                        risk.firm=sum((1/(1+exp(beta0.x+beta1.x*opti_emp_bench_risk)))*emp.x/sum(emp.x)),
                        risk.sector=sum((1/(1+exp(beta0.x+beta1.x*sopti_emp_bench_risk)))*emp.x/sum(emp.x)))
 # We multiply by 100 to get percentage
 emp.bench=emp.bench*100
-display("Share of employment at risk")
-display("Reference scenario: Benchmarking")
-emp.bench
+stargazer(emp.bench,title=" Share of employment at risk, Reference: Benchmarking",
+          type="html",rownames=FALSE,digits = 4,
+          summary=FALSE, style="aer",covariate.labels = c("Benchmarking","Optimal Firm","Optimal Sector"))
 ```
+<br>
 
 While in the benchmarking scenario around $6.92%$ of all jobs are at risk of relocation we can lower that risk with optimal permit allocation on a firm-level to $2.9%$ and even with sector-level allocation to $4.51%$ which is quite a nice improvement. Finally we want to look at what we have achieved if the government's main concern would be carbon leakage. In our formula this would mean that $\alpha=0$ throughout our calculations and we would need to weight it by the level of emisson $e_i$ which is defined as $e_i = \frac{{\textrm{emisson}}_i}{\sum \textrm{emisson}_i}$.
 
 **Task:**
+
 By now you know how it all works so simply press check and investigate the data.
 
-```{r "5_Exploring_the_Resu__12"}
+```{r "5_Exploring_the_Resu__12",results='asis'}
 co2.allo=summarize(optimal,risk.allo=sum((1/(1+exp(beta0.x+beta1.x*allo.x)))*co2.x/sum(co2.x)),
                        risk.firm=sum((1/(1+exp(beta0.x+beta1.x*opti_co2_allo_risk)))*co2.x/sum(co2.x)),
                        risk.sector=sum((1/(1+exp(beta0.x+beta1.x*sopti_co2_allo_risk)))*co2.x/sum(co2.x)))
@@ -729,18 +803,23 @@ co2.bench=summarize(optimal,risk.bench=sum((1/(1+exp(beta0.x+beta1.x*bench.x)))*
 # We multiply by 100 to get percentage
 co2.bench=co2.bench*100
 
-display("Share of emissions at risk")
-display("Reference scenario: Grandfathering")
-co2.allo
-display("Reference scenario: Benchmarking")
-co2.bench
+
+stargazer(co2.allo,title=" Share of emissions at Risk, Reference: Grandfathering",
+          type="html",rownames=FALSE,digits = 4,
+          summary=FALSE, style="aer",covariate.labels = c("Grandfathering","Optimal Firm","Optimal Sector"))
+
+stargazer(co2.bench,title=" Share of emissions at Risk, Reference: Benchmarking",
+          type="html", rownames=FALSE,digits = 4,
+          summary=FALSE, style="aer",covariate.labels = c("Benchmarking","Optimal Firm","Optimal Sector"))
 ```
+<br>
 
 As we can see we get a nice improvement when our reference scenario is grandfathering where we can decrease the shares of emissions at risk between $1.32$ and $2.51$ percentage points with optimal permit allocation either across sectors or firms. But when the reference scenario is benchmarking which has a higher baseline risk due to the lower amount of permits given out we get a huge decrease by $9.59$ percentage points by giving out the permits with optimal permit allocation across firms but only a decrease of $0.88$ percentage points if we optimize across sectors. This succes of benchmarking is mainly driven by its within-sector allocation.
 
 Now before we finish this problem set with a conclusion, it's time for one last quiz.
 
 **Task:** 
+
 You can enter whatever you think is needed to solve the quiz here.
 
 ```{r "5_Exploring_the_Resu__13",optional=TRUE}
