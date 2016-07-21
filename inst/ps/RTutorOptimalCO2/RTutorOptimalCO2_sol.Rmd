@@ -1,0 +1,1339 @@
+# Optimal CO2 emission policy given relocation risk
+
+---
+title: "RTutorOptimalCO2"
+author: "Andreas Unkauf"
+date: "19.3.2016"
+output: html_document
+---
+
+#< ignore
+```{r "create_ps"}
+library(restorepoint)
+# facilitates error detection
+set.restore.point.options(display.restore.point=TRUE)
+
+library(RTutor)
+library(yaml)
+library(restorepoint)
+setwd("C:/Users/Andreas/Documents/Studium/RTutorOptimalCO2")
+ps.name = "RTutorOptimalCO2"; sol.file = paste0(ps.name,"_sol.Rmd")
+libs = c("ggplot2","foreign","dplyr","yaml","dplyr","stargazer") # character vector of all packages you load in the problem set
+#name.rmd.chunks(sol.file) # set auto chunk names in this file
+create.ps(sol.file=sol.file, ps.name=ps.name, user.name=NULL,libs=libs, stop.when.finished=FALSE,addons="quiz",var.txt.file = "variables.txt")
+show.shiny.ps(ps.name, load.sav=FALSE,  sample.solution=FALSE,is.solved=FALSE, catch.errors=TRUE, launch.browser=TRUE)
+stop.without.error()
+```
+#>
+
+
+In this problem set we want to analyze industry compensation under the risk of relocation.
+To do so, we gradually reproduce the paper **"Industry Compensation under Relocation Risk: A Firm-Level Analysis of the EU Emissions Trading Scheme"** written by Ralf Martin, Mirabelle Muls, Laure B. de Preux and Ulrich J. Wagner published in 2014 in which they derive efficient permit allocation rules in order to reduce carbon leakage und job risk without increasing compensation.
+The original paper and the data can be obtained from the website of the *American Economic Association* (Both can be found here: [link](https://www.aeaweb.org/articles?id=10.1257/aer.104.8.2482) )
+
+## Exercise Overview
+
+  1. Introduction
+  
+  2. Exempted Firms
+  
+  2.1 Graphical approach
+  
+  3. Vulnerability Score
+  
+  4. Optimal Permit Allocation
+  
+  5. Exploring the Results
+  
+  6. Conclusion
+  
+  7. References
+  
+
+*Note: This will be the recommended order to work through the problem set but if required individual parts can be skipped. Bear in mind that later exercises rely on knowledge and information achieved in early exercises. Finally you need solve the tasks in each exercise in the given order.*
+
+
+
+## Exercise 1 Introduction
+
+In this exercise we just want to set a basic knowledge for the given scenario and have a first peak on the given data we are going to use.
+
+
+### The EU Emission Trading Scheme
+
+Since we want to analyze how we can optimize permit allocation throughout the EU Emissions Trading Scheme (EU ETS), we first try to understand how the EU ETS works.
+The objective of the EU ETS is, to reduce the pollution of greenhouse gas emissions in all partaking 31 countries by setting an overall cap on CO2 emissions from all stationary sources. All affected emitters can subsequently trade their permits to pollution with each other and therefore lower their individual production costs. By gradually reducing the overall cap of CO2, the price of the permits begin to rise. While for firms which can easily and cheaply reduce their emissions this is an appeal to so in order to establish their profit, firms with high cost of reducing their emissions are facing a lot of additional costs.
+These additional cost however are for many firms an appeal to relocate to an unregulated country in order to stay competitive on the market (see Ellerman et al. (2010, p. 193-195)). This risk of relocation, which is composed of job losses and carbon leakage, is the main driving reason that forced politicians to weaken the policy and give sectors and sub-sectors with a high risk of relocation a higher share of free permits. In the phases I and II of the EU ETS this was mainly done by grandfathering while since phase III the allocation is made by benchmarking. If you need more information on grandfathering and benchmarking, take a look at Ellerman et al. (2010, p. 60-67) or check the info box below.
+
+#< info "Grandfathering and Benchmarking"
+For phase I (2005-2007) and II (2008-2012) free permits were allocated in a decentralized fashion. Each partaking country had to state Nation Allocation Plans in which they determined a national cap as well as how the permits were spread across the sectors. To set this up most countries chose to grandfather the allocations of their firms, i.e. they looked at the historical emissions and adjusted them to meet the specified criteria of the EU.
+
+In phase III (2013 - 2020) this allocation schema changed towards benchmarking decision. For each product a benchmark was stated as the average emission needed to produce this product by the best 10 percent of installations producing this item inside the EU. Afterwards each installation was measured against this benchmark and each installation got their free permits accordingly. 
+
+#>
+
+While firms in sectors with an average risk of relocation get a share of 80% in 2013 and declining to 30% in 2020 of their benchmarked product pollution for free in phase III, firms in a sector with a high risk of relocation are granted 100% of their benchmarked product permits for free and therefore only need to auction a small amount of permits. 
+Now since the European Commission (EC) considers sectors at a high risk of relocation if they surpass certain threshold values for carbon intensity (CI) and/or trade intensity (TI), we want at first analyze which sectors are exempted.
+For more information about CI and TI, you can check the info-box below.
+
+#< info "TI and CI"
+The carbon intensity (CI) is the sum of direct and indirect costs of permit auctioning divided by gross value added of a sector. It represents the cost burden inflicted by full auctioning.
+The trade intensity (TI) on the other hand is calculated as "the ratio between the total value of exports to third countries plus the value of imports from third countries and the total market size for the Community (annual turnover plus total imports from third countries)" (Directive 2009/29/EC).
+#>
+
+
+### About the Data
+
+The data for this paper provides us with very unique firm-level dataset since it combines classical economic performance measures from the ORBIS database, data on CO2 emissions from the EU ETS and interview data obtained by interviewing manufacturing firms from the following six European countries: Belgium, France, Germany, Hungary, Poland and United Kingdom. This interview data supplies us with a proxy for how vulnerable firms are to carbon pricing and we will use this source later to optimize the allocation of free permits.
+
+
+### On the problem set itself
+
+Throughout this problem set you'll have to solve different code chunks and quizzes. Before you start with the first code chunk in each exercise you need the click the `edit` panel. Be sure to check the info-boxes for further information to solve the code chunks. Moreover you can check the `hint` panel at each code chunk to get a little tip for solving the task. Finally if don't know how to solve the task at all you can check the `solution` panel to finish the task. 
+
+
+
+So before we investigate the dataset in more detail, here's a little quiz to get warmed up:
+
+#< quiz "The EU ETS"
+parts:
+  - question: 1. What does EU ETS stand for?
+    choices:
+        - European Educational Testing System
+        - European Union Emissions Trading System*
+        - European Union Emissions Transfer Solution
+        - Eastern Union Efficient Technical Solution
+    multiple: FALSE
+    success: Great, your answer is correct!
+    failure: Try again.
+  - question: 2. How many member states does the EU ETS have?
+    answer: 31
+    roundto: 0.01
+  - question: 3. Why are some firms exempted? (Multiple choice)
+    choices:
+      - They payed the EU in order to be exempted
+      - Their sector is very carbon intensive and was therefore exempted*
+      - Not every sector agreed to take part in the EU ETS
+      - Their sector is very trade intensive and was therefore exempted*
+    multiple: TRUE
+    success: Great, your answer is correct!
+    failure: Try again.    
+#>
+
+#< award "I`m just getting warmed up"
+  Good job solving the first quiz! 
+  I hope you will have fun solving the upcoming tasks and quizzes.
+#>
+
+
+
+## Exercise 2 Exempted Firms
+In this exercise we want to find out more about the sectors that are exempted. So first of all we load the data necessary for this purpose. To do so we use the command `read.dta()` from the package `foreign` in order to load the dataset `basicdata.dta` into our workspace, which contains firm-level data on manufacturing firms in the EU ETS. Remember to download the file `basicdata.dta` from where you downloaded this problem set and save it in your working directory.
+
+#< info "read.dta()"
+The command `read.dta()` from the `foreign` package is used to read in a file in the dta format and save it into a data frame to work with it in R. In order to use it, you need to load the package `foreign` with the `library()`command.
+If you saved the data in the working directory, you can simply use the name of the data:
+
+```{r "2_",eval=FALSE}
+library(foreign)
+read.dta("data.dat")
+```
+
+If you saved the data in another directory, you need to set the full path to it:
+
+```{r "2__2",eval=FALSE}
+library(foreign)
+read.dta("C:/path/data.dat")
+```
+
+If you want to store the data in a variable `mydata`, just set it equal:
+
+```{r "2__3",eval=FALSE}
+library(foreign)
+mydata=read.dta("data.dat")
+```
+
+
+You need more information on `read.dta()`? Go ahead and check <a href="https://stat.ethz.ch/R-manual/R-devel/library/foreign/html/read.dta.html"
+target = "_blank"> 
+stat.ethz.ch/R-manual/R-devel/library/foreign/html/read.dta.html</a>.
+
+#>
+
+**Task:**
+Load the library `foreign` and load the dataset `basicdata.dta` with the `read.dta()`command. Save the data in the variable `basic`. If you need further information, just check the info-box above about the `read.dta()` command. Click `check` after you finished.
+
+```{r "2_1"}
+#< task
+# Enter your code here
+#>
+#< hint
+display(" data=read.dta(\"data.dta\") is the basic command. Now change the variable to store it and the dta-file you want to read in. Remember to set the dta-file in quotation marks.")
+#>
+library(foreign)
+basic = read.dta("basicdata.dta")
+```
+
+Now with the data loaded, we want to see how the sectors spread around carbon and trade intensity. Therefore we need to group the firms by their NACE four-digit level code (a system to classify industry) and calculate their average trade and carbon intensity as well as their sum of installations. The variables we need for this task are `sec4dig`,`vv.xxx0`, `tt.xxx0`,`ninstallations` and `nonmanufactoring`. You can check the info-box fur further information on this variables.
+
+#< info "Variables of interest 1"
+- `sec4dig`: The NACE four-digit level code of a firm
+- `vv_xxx0`: Represents the carbon intensity of the firm (CI)
+- `tt_xxx0`: Represents the trade intensity of the firm (TI)
+- `ninstallations`: The number of installations
+- `nonmanufacturing`: Indicator if a firm is manufacturing. 1 if not manufacturing, NA if manufacturing
+#>
+
+Before we calculate the averages we need to clean up our data since for some firms we have a missing data problem.
+
+**Task**
+Create a new dataset `Ex1` where you remove
+- firms that have no entry for `sec4dig`, i.e. firms that have no NACE four-digit classification
+- firms where `nonmanufacturing` is 1, i.e. firms that are not manufacturing
+- firms where `ninstallations` is missing, i.e. firms where we have missing information about their number of installations
+
+form the original dataset `basic`. Since this is your first real exercise you get the solution straightaway, but try to understand what happens and how we delete entries because we need the same pattern later on.
+
+```{r "2_2"}
+#< task
+# We filter out the missing data from our data set basic and save it into the new dataset Ex1
+Ex1=filter(basic, is.na(sec4dig)==FALSE,is.na(nonmanufacturing)==TRUE,is.na(ninstallations)==FALSE)
+#>
+```
+
+#< award "The Cleaner"
+  Well done cleaning up the data.
+#>
+
+Now it's time to group our firms by their NACE four-digit level and calculate the averages and sums. To accomplish this task you will learn about the `transmute()`and `group_by()` routines from the package `dplyr`.
+
+**Task:**
+Load the library `dplyr` and group the dataset `Ex1`by its NACE four-digit level stored in `sec4dig` with the `group_by()` command. Save this grouping in the variable `by_nace`.
+If you are not familiar with the `group_by()` command, go and check the info-box below.
+
+#< info "group_by()"
+With the the `group_by()` command we can break down datasets into specified groups. In the command you need to specify the data you want to use and the attribute you want to group the data by.
+
+```{r "2__5",eval=FALSE}
+library(dplyr)
+My_Grouping=group_by(MyData,MyAttribute)
+```
+
+The biggest advantage of this command is the possibility to apply other commands (like `transmute`, `summarise`,...) on it with getting the results automatically applied by group. We' ll use this fact in the next task.
+You need more information on `group_by()`? Go ahead and check 
+<a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html" target = "_blank"> cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html</a>.
+#>
+
+```{r "2_3"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("...=group_by(...,sec4dig) would be a part of the command. Think about what data you want to group and where you want to save it.")
+#>
+library(dplyr)
+by_nace=group_by(Ex1,sec4dig)
+```
+
+With the grouping `by_nace` we are able to do calculations for firms of the same group. As said earlier we now want to calculate the mean of CI and TI as well as the sum of installations in each group of our dataset. 
+
+**Task:**
+Use the `summarise()` command on your grouping `by_nace ` and calculate the following:
+- the mean of `vv_xxx0` and save it into `CI.mean`. Add `na.rm=TRUE` in the mean command.
+- the mean of `tt_xxx0` and save in into `TI.mean`. Add `na.rm=TRUE` in the mean command.
+- the sum of `ninstallations` and save in into `sum.installations`
+Save the results into the variable `NACE`.
+
+#< info "summarize()"
+With the `summarize()` command we are able to use aggregate functions very effective espacially on grouped data. If we want for example calculate the number of entries in each grouped specified in `MyGrouping` this can be done as follows:
+
+```{r "2__4",eval=FALSE}
+summarize(MyGrouping, entries = n())
+```
+
+Other possible aggregate funcions are: `mean()`, `sd()`, `sum()`, `min()`, `max()`,...
+For later use you can also save your new data set as follows:
+
+```{r "2__5",eval=FALSE}
+MySummary=summarize(MyGrouping, entries = n())
+```
+
+You need more information on `summarize()`? Go ahead and check <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html" target = "_blank"> cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html</a>.
+#>
+
+```{r "2_4"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("...=summarize(by_nace,CI.mean=mean(vv_xxx0,na.rm=TRUE),...,...). Now just fill out the '...'  ")
+#>
+NACE=summarize(by_nace,CI.mean=mean(vv_xxx0,na.rm=TRUE),TI.mean=mean(tt_xxx0,na.rm=TRUE),sum.installations=sum(ninstallations))
+```
+
+#< award "Grouping and Summarizing"
+  Keep up the good work!
+#>
+
+Let's have a look at what we have calculated so far. Just press `check`.
+
+```{r "2_5"}
+#< task
+head(NACE)
+#>
+```
+
+As you can see, for each NACE four-digit sector we have their means of CI and TI as well as their sum of installations. If you find yourself asking why `sum.installations` is not an even number, keep in mind that a firm may not only produce one type of product and therefore the installation belongs to different NACE four-digit levels.
+Let's look up the values for a specified NACE-sector. For example the NACE 4-digit code `2051` stands for a "Manufacture of explosives". If we want to get the values, you could simply look through the full dataset, but this wouldn't be very efficient. An easier way te get the data is to use the `filter()` command from the package `dplyr` as you have seen earlier. If you're not familiar with this function, check the info-box.
+
+#< info "filter()"
+The `filter()` function of the `dplyr` package can be used to generate a subset of a dataset by checking for a specified criteria. If for example our dataset `MyData` has a row `postcode` with all postcodes from Germany but we are only interested in the postcode `89075` we can filter the data in the following way
+
+```{r "2__6",eval=FALSE}
+filter(MyData,postcode=="89075")
+```
+
+You need more information on `filter()`? Go ahead and check <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html" target = "_blank"> cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html</a>.
+#>
+
+**Task:**
+Use the `filter()` command to get the values of `CI.mean`, `TI.mean` and `sum.installations` for the sector "Manufacture of explosives" with the NACE four-digit code `2051`.
+
+```{r "2_6"}
+#< task
+# Enter your code here.
+#>
+#< hint
+display("Use 'filter(...,...==\"2051\")' and change the '...'")
+#>
+filter(NACE,sec4dig=="2051")
+```
+
+So the sector `2051: Manufacture of explosives` consists of 17 installations (in our Dataset) and has a CI of `2.50` and a TI of `26.03`. Now back to our dataset `NACE`. We can now use the package `ggplot2` which gives us a nice set of functions to visualize data in order to get a first insight of our data.
+So let's plot each NACE sector on a graph with TI on the x-axis and CI on the y-axis. Moreover, let each circle be proportional to the number of installations in this sector.
+
+**Task:**
+For this task the code is give, so just press check and get an insight to the data.
+
+```{r "2_7"}
+#< task
+# Load the required package 'ggplot2' from the library
+library(ggplot2)
+
+# Define which data you want to use and its aesthetics.
+# In our case the x and y arguments
+MyPlot =ggplot(NACE,aes(x=TI.mean,y=CI.mean))
+
+# With geom_point we define that we want a scatter plot, 
+# size allows us to give every sector their respective number of installations
+# scale_size_area defines the maximal size of a point
+# With theme we turn of the legend
+# And with scale_x/scale_y we define our x- and y- axis
+MyPlot= MyPlot+geom_point(aes(size=sum.installations),shape=1,alpha=0.8)+
+  scale_size_area(max_size=20)+
+  theme(legend.position="none")+
+  scale_x_continuous(limits=c(0,100),name="Trade intensity")+
+  scale_y_continuous(limits=c(0,80),name="Carbon intensity")
+
+# Show the plot
+MyPlot
+#>
+```
+
+As we can see there are many NACE sectors located in the lower left corner with very low CI and TI. Also we have many trade intensive sectors and only some very carbon intensive sectors. Like we said in the beginning, the EC has defined exact threshold values in order to decide if a sector is at a high risk of relocation:
+- TI or CI is greater than 30%
+- TI is greater than 10% and CI greater than 5%
+If one if these criteria are met, a sector is considered to have risk of carbon leakage. For our regarded sector `2051: Manufacture of explosives` this means no exempting. Now let's add these thresholds to our plot to see if there are many sectors considered to be at a high risk of relocation.
+
+**Task:**
+To represent the threshold values, we want to add 2 vertical and 2 horizontal lines to our plot with the two routines `geom_vline` and `geom_hline`. Check the info-box for informations to this routine. Add the following lines to `MyPlot`:
+- A horizontal line with intercept at 30% CI in red
+- A horizontal line with intercept at 5% CI in blue
+- A vertical line with intercept at 30% TI in green
+- And a vertical line with intercept at 10% TI in black
+
+#< info "geom_vline and geom_hline"
+  With the commands `geom_vline()` and `geom_hline()` from the package `ggplot2` we are able to add vertical and horizontal lines to our plot. So if we have a plot `MyPlot` and want to add a horizontal line at y=5 we proceed as follows
+  
+```{r "2__7",eval=FALSE}
+library(ggplot2)
+MyPlot+geom_hline(yintercept=5)
+```
+
+If we want also add a vertical line at x=5 we can use
+
+```{r "2__8",eval=FALSE}
+MyPlot+geom_hline(yintercept=5)+geom_vline(xintercept=5)
+```
+
+Now add different colors for these lines
+
+```{r "2__9",eval=FALSE}
+MyPlot+geom_hline(yintercept=5,color="red")+geom_vline(xintercept=5,color="blue")
+```
+
+If you need more information on `geom_vline()` and `geom_hline()`, go ahead and check 
+<a href="http://docs.ggplot2.org/0.9.3.1/geom_vline.html" target = "_blank"> docs.ggplot2.org/0.9.3.1/geom_vline.html</a> and
+<a href="http://docs.ggplot2.org/0.9.3.1/geom_hline.html" target = "_blank"> docs.ggplot2.org/0.9.3.1/geom_hline.html</a>.
+#>
+
+```{r "2_8"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("MyPlot+geom_hline(...)+geom_hline(...)+geom_vline(...)+geom_vline(...) ")
+#>
+MyPlot+geom_hline(yintercept=30,color="red")+
+      geom_hline(yintercept=5,color="blue")+
+      geom_vline(xintercept=30,color="green")+
+      geom_vline(xintercept=10,color="black")
+      
+```
+
+With the these thresholds now being set, we want to use the same classification for the sectors as in the underlying paper:
+- Group A: CI>30, i.e. all above the red line, representing sectors with a high carbon intensity
+- Group B: TI>30 but CI<30, i.e. all on the right side of the green line but under the red line, representing sectors with high trade intensity and mediocre carbon intensity
+- Group C: 5<CI<30 and 10<TI<30, i.e. the square between all lines, representing sectors with mediocre trade and carbon intensity
+
+The remaining sectors are the ones, that are not exempted from the auctioning.
+We can represent this calssification with the following graphic:
+
+![](Rplot4.png)
+
+
+Furthermore, since B is a very big group, we want to separate it into two parts:
+- Group B with CI>5, which are sectors with high trade intensity and low to none carbon intensity
+- Group B with 5<CI<30, which are sectors with high trade intensity and mediocre carbon intensity
+
+Now with this classification set, we can move on to the next exercise and analyze the characteristics of these exempted sectors. Before that, let's conclude this exercise with a quiz.
+
+**Task:** 
+You can enter whatever you think is needed to resolve the quiz here.
+
+```{r "2__10", optional = TRUE}
+#< task_notest
+# Enter your command here
+#>
+```
+
+#< quiz "NACE"
+parts:
+  - question: 1. What is the NACE four-digit classification?
+    choices:
+        - A classification system for the different NASCAR series
+        - An industry standard classification system*
+        - A system used by the National Association of Corrosion Engineers (NACE) for different types of   corrosion
+    multiple: FALSE
+    success: Great, your answer is correct!
+    failure: Try again.
+  - question: 2. What is the CI.mean of the sector with the NACE code `2320` (Manufacture of refractory products) ?
+    answer: 11.70273
+    roundto: 0.00001
+  - question: 3. How many installations are there for "Manufacture of paints, varnishes and similar coatings, printing ink and mastics" with the NACE code `2030`?
+    answer: 3
+    roundto: 0.01
+#>
+
+#< award "Quizzer"
+Congratulation, you solved the second quiz succedfully!
+#>
+
+
+
+## Exercise 2.1 Graphical approach
+
+As we said in the beginning, the risk of relocation has two different sides: If a company decides to relocate to an unregulated country, the country they leave has to face job losses and since their pollution is now unregulated, we have probably an increase in greenhouse gas emissions that are a global bad. When the policy was made this was accounted in the fashion that firms in a sector with high CI and/or TI were exempted from auctining and recieved their benchmarked permits fully for free. Now did this exempting level out the effectiveness of the policy? Are only firms exempted with a small amount of greenhouse gas (GHG) emission? Is the huge bulk of polluters still forced to trade the majority of their permits or to reduce their emissions? Let's calculate which of our groups has the biggest share on emissions, employees and firms.
+
+#< info "Variables of interest 2"
+- `notETS`: Indicator if a firm is part of the EU ETS. 1 if not, NA if part of the EU ETS
+- `xquad`: Represents the groups we defined in the first Exercise. Can be A, B&CI<5, B&CI>5, C, not exempt, NA
+- `countid`: Share of this firm in given sector when firm is multi sector
+- `empBigorbis`: Total firm level employment
+- `nonmanufactoring`: Indicator in a firm is manufacturing. 1 if not manufacturing, NA if manufacturing
+- `surr`: Average of permits surrendered in 2007 and 2008
+#>
+
+**Task:**
+As in Exercise 1 we begin with loading the dataset. Just click check to load it.
+
+```{r "2.1_"}
+#< task
+library(foreign)
+Dat = read.dta("basicdata.dta")
+#>
+```
+
+Before we calculate the shares each sector has we need to clean up our data in case of missing values. If you are not sure how this works, just check Exercise 1 again.
+
+**Task:**
+Manipulate the dataset `Ex1.1` by removing
+- firms where `nonmanufacturing` is 1, i.e. firms that are not manufactoring
+- firms where `notETS` is 1, i.e. firms that are not in the EU ETS
+- firms where `xquad` is NA, i.e. firms we couldn't derive a group for (A, B&CI<5, B&CI>5, C, not exempt)
+- firms where `countid` is NA, 
+- firms where `empBigorbis` is NA, i.e. firms we have no information about their employees
+
+form the original dataset. Use the `filter()` command
+```{r "2.1_2"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("Dat=filter(Dat,is.na(nonmanufacturing)==TRUE,...) is the solution for removing non manufacturing firms. Now go ahead and fill out the ....")
+#>
+Dat=filter(Dat,is.na(nonmanufacturing)==TRUE,is.na(notETS)==TRUE,
+           is.na(xquad)==FALSE,is.na(countid)==FALSE,is.na(empBigorbis)==FALSE)
+```
+
+Now that our dataset is cleaned up, let's think about the shares. Before we calculate the total shares of each group we need to calculate them on the firm-level. In our dataset we have total numbers about emissions and employees as well as the ratio of the firm in sector (not every firm is only producing in one sector). If we divide these numbers by their total sum, we get the share of each.
+
+
+**Task:**
+Divide in the dataset `Ex1.1` each variable `countid`, `empBigorbis` and `surr` by their respective total sum in order to get their shares. Use the `mutate()` command for this task. Save the share of `countid` in `oneOsum`, the share of `empBigorbis` in `empOsum` and the share of `surr` in `surrOsum`.  For more info on the `mutate()`command check the info box below
+
+#< info "mutate() and transmute()"
+With the commands `mutate()` and `transmute()` we can add new columns to our data by computing with our existing columns. The major difference between `mutate()` and `transmute()` is that `mutate()` adds new columns to the dataset while keeping the old columns as well, while `transmute()` only keeps the new variables.
+
+```{r "2.1__1",eval=FALSE}
+mutate(MyData, amount=sum(Var1))
+```
+
+If you want to save this new dataset to work with it later on, just set it equal
+
+```{r "2.1__2",eval=FALSE}
+NewData=mutate(MyData, amount=sum(Var1))
+```
+
+The value of `amount` would for each row be the same since `sum()` adds up each entry of `Var1`.
+Now - as said in the `info-box of `group_by()` - we can also use these commands on grouped data to extract variables for the specified groups
+
+```{r "2.1__3",eval=FALSE}
+mutate(MyGrouping, amount=sum(Var1))
+```
+
+This time `amount` would differ for each group specified in `MyGrouping` since on the variables in the same groups get add up by `sum()`.
+You need more information on `mutate()` and `transmute()`? Go ahead and check <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html" target = "_blank"> cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html</a>.
+#>
+
+```{r "2.1_3"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("...=mutate(Dat,oneOsum=countid/sum(countid),...) ")
+#>
+Dat=mutate(Dat,oneOsum=countid/sum(countid),empOsum=empBigorbis/sum(empBigorbis),surrOsum=surr/sum(surr))
+```
+
+#< award "Mutating and Transmuting"
+You now know the basics of `mutate()` and `transmute()`!
+#>
+
+Since we are interested in the shares of each group we established in Exercise 2, we need to group by this classification. The variable `xquad` contains the information about the groups we derived.
+
+**Task:**
+Use the `group_by()` command in order to group the dataset `Ex1.1` by the variable `xquad`. Save the result in the variable `classification`.
+
+```{r "2.1_4"}
+#< task
+# Enter your code here
+#>
+#< hint
+display(" ")
+#>
+classification=group_by(Dat,xquad)
+```
+
+With this classification set we now can calculate the shares of each group stated in `xquad`. As described our aim is to calculate for each group stated in `xquad` the total share on firms, employees and emissions.
+
+**Task:**
+Use the summarize() routine on the grouping `classification`. Calculate the following three variables:
+- `firms`: The sum over the variable `oneOsum`
+- `employees`: The sum over the variable `empOsum`
+- `emission`: The sum over the variable `surrOsum`
+Save it all in the data set `Ex1.1`.
+
+```{r "2.1_5"}
+#< task
+# Enter your code here
+#>
+#< hint
+display(" ")
+#>
+Ex1.1=summarize(classification,firm=sum(oneOsum),employees=sum(empOsum),emission=sum(surrOsum))
+```
+
+So let's have a fist look at what we calculated until now
+
+```{r "2.1_6"}
+#< task
+Ex1.1
+#>
+```
+
+With the values calculated we can again use the `ggplot()` package to get a visual understanding of the data.
+
+**Task:**
+Just execute the code by clicking `check` and have a look at the resulting plot.
+
+```{r "2.1_8"}
+#< task
+# Load the package 'ggplot2'
+library(ggplot2)
+# We need to `melt` the data because we have now a wide format but 
+# for our plot we need to change that
+DatMelt=melt(Ex1.1,id.vars="xquad")
+# For our barplot we want the different sectors on the x-Axis
+# and their respetive values as the `bar`
+barplot = ggplot(DatMelt,aes(x=xquad,y=value,fill=variable))
+# For each sector we want their values of firms, employment and emission
+# displayed side by side. Position="dodge" allows us to do this
+barplot+geom_bar(stat="identity",position="dodge")+
+  scale_y_continuous("") + 
+  scale_x_discrete("") +
+  theme(legend.position=c(1,1),legend.justification=c(1,1)) +
+  scale_fill_discrete(name ="", labels=c("Share of firms", "Share of employment","Share of emissions"))
+#>
+```
+
+Now this plot verifies the worry we expressed in the beginning of this exercise: While nearly 50% of the firms are not exempted from auctioning they only represent around 15% of all CO2 emissions. This leaves the pollution rights by the European industry and thus strongly weakens the principle of full auctioning as it was stated by the ETS. As we said one reason of this dilemma is the fear of the risk of relocation which the industry uses in order the get exempted, but how can we modify this policy and get a larger amount of emission permits to be fully auctioned?
+
+One approach is the "Optimal Permit Allocation" which idea is "that payments be distributed across firms so as to equalize marginal relocation probabilities, weighted by the damage caused by relocation" (Martin, Muls, Preux, Wagner: 2014) . We will try to apply this idea in the upcoming exercises but for now let's finish this exercise with a quiz.
+
+**Task:**
+Enter what you want in this part in order to solve the quiz.
+
+```{r "2.1__4", optional = TRUE}
+#< task_notest
+# Enter your command here
+#>
+```
+
+
+#< quiz "Quiz 2.1"
+parts:
+  - question: 1. What percentage of employees is affected from not being exempted?
+    choices:
+        - Around 42,97%*
+        - Nearly 47,78%
+        - Only 11,54%
+    multiple: FALSE
+    success: Great, your answer is correct!
+    failure: Try again.
+  - question: 2. Some firms are labeled with `not exempted`. From what are these firms not exempted?
+    choices:
+        - They are not allowed to produce any GHG emissions at all
+        - They are exempted from reducing their emissions*
+        - Their energy consumption must be covered with renewable energy
+    multiple: FALSE
+    success: Great, your answer is correct!
+    failure: Try again.
+#>
+
+#< award "Advanced quizzing"
+Good work! Just keep going
+#>
+
+
+## Exercise 3 Vulnerability score
+
+As we said in the previous exercise the optimal permit allocation idea is to hand out payments, i.e. free permits, to firms in order to equalize their marginal relocation probability (weighted by the damage caused by their relocation). How do you get those relocation probabilities to optimize effective?
+The approach in the paper was to collect interview data from different firms in order to try out their model. In their telephone interview one of their questions to managers was:
+
+"Do you expect that government efforts to put a price on carbon emissions will force you to outsource part of the production of this business site in the foreseeable future, or close down completely?" 
+
+Then they used the answer to match it to an ordinal score, the so called "vulnerability score"(VS) which ranges from 1 to 5. These scores were set as follows:
+- VS=1: The managers expected no outsourcing at all
+- VS=3: At least 10% of production and/or employment are expected to be outsourced
+- VS=5: Probably the plant gets shut down completely
+- VS=2 and VS=4 were assigned to responses in between 
+
+If you want to know more about the interview design, be sure to check the info box below.
+
+#< info "About the interview"
+Since the VS score is crucial for the following analysis a huge effort went into the interview design in order to ensure the validity of the VS score and to minimize the arising bias. Key aspects were:
+- The interview design itself was planned as a dialogue between the managers and the interviewer where some specific questions were put into discussion. Moreover it was designed to be a "double blind" interview. This means the managers didn't know their answers were scored in order to minimize the probability to give biased information as well as the interviewer didn't know about the firms they were interviewing in order to minimize their prejudice about certain firms influencing the scores.
+- The sample of interviewed firms was chosen out of firms with more than 50 and less than 5000 employees in order to have firms that are willing to relocate since they are big enough, but to exclude firms that are too big to relocate. Moreover the sample was uniformly distributed across countries and sectors to ensure to capture all differences. Finally the interviewed firms were compared to the firms that declined the interview to check if there are systematic errors between them. This bias could also be excluded and we therefore achieved a significant random sample.
+- Finally the sample was analyzed to ensure internal as well as external consistency, which both could be verified throughout the paper
+
+For more information on representative data take a look at Stock and Watson (2015).
+#>
+
+Let's investigate this score a little bit before we use it in the model. First, we want to have look at the firm characteristics of the firms that responded to the interview before we look at country-specific and sectoral differences. Check the info box below for more information on the variables we are using.
+
+#< info "Variables of interest 3"
+- `f_impact_score_clean`: The interview response of the firm (the VS)
+- `unique`: Indicator if a firm was interviewed
+- `country`: Country in which the firm is located
+- `mcetsdig`: Industrial sectors within the EU ETS
+#>
+
+**Task:**
+As usual we begin with loading the dataset. Just click `edit` and then `check` to load it.
+
+```{r "3_"}
+#< task
+library(foreign)
+Dat = read.dta("basicdata.dta")
+#>
+```
+
+The variable `unique` contains information if a firm has accepted or declined the interview. If the firm accepted, `unique` is 1 and else NA. It is also NA if a firm was sampled twice.
+
+**Task:**
+Erase the entries where `unique` is NA and remove the entries where `fimpact_score_clean` is NA. Since you already know how this works the solution is already given
+
+```{r "3_1"}
+#< task
+Dat=filter(Dat,is.na(unique)==FALSE,is.na(fimpact_score_clean)==FALSE)
+#>
+```
+
+# Overall characteristics
+
+We want to begin by looking up some characteristics of the firms we interviewed. For this task we want to use the `stargazer`package which allows us to design nice tables out of data and regressions. If you want more information on the `stargazer` package check the info box below.
+
+#< info "Stargazer"
+With the `stargazer` package we are able to produce well-formatted tables for summary statistics as well as for regressions in LaTeX, HTML/CSS and ASCII. Since you wont need to code `stargazer` commands throughout the problem set and it is solely a package for optics, I recommend you to check <a href="http://jakeruss.com/cheatsheets/stargazer.html" target = "_blank"> jakeruss.com/cheatsheets/stargazer.html</a> or <a href="https://cran.r-project.org/web/packages/stargazer/vignettes/stargazer.pdf" target = "_blank"> https://cran.r-project.org/web/packages/stargazer/vignettes/stargazer.pdf</a> for some nice examples.
+#>
+
+**Task:**
+For this task the code is already given, so just press `check`.
+
+```{r "3_2"}
+#< task
+library(stargazer)
+characteristics = transmute(Dat, age=company_age_clean, turnover=firmturnover2007_EUR/1000,
+                   employees=firmemployees2007,EBIT=earningsbeforeI_T_2007_EUR/1000,
+                   shareholder=noshareholders2007, subsidiaries=nosubsidiaries2007)
+
+stargazer(characteristics, type="text",style="aer",
+          summary.stat=c("mean","sd","p25","median","p75","n"),digits=0,
+          title="Firm Characteristics",
+          covariate.labels = c("Age (years)","Turnover (millions EUR)","Number of employees",
+                               "EBIT (millions USD)","Number of Shareholders",
+                               "Number of subsidiaries"))
+#>
+```
+
+We can see that our sample data is nicely spread and as previous said is quite reliable. Let's continue by calculating the overall mean and standard deviation of the VS accross all firms.
+
+**Task:**
+Calculate the mean and the standard deviation of `fimpact_score_clean` using the basic commands `mean()` and `sd()`.
+
+```{r "3_3"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("mean(Dat$...) and sd(Dat$...) ")
+#>
+mean(Dat$fimpact_score_clean)
+sd(Dat$fimpact_score_clean)
+```
+
+Now this implies a rather low impact of carbon pricing across all partaking firms. We will later see if this holds true for country-level and sector-level data.
+
+Next let's see if the sample is spread evenly across the considered countries. To do so we need to group our dataset by the variable `country` and calculate the sum over the variable `unique` since this is now 1 for every entry.
+
+**Task:**
+Use the `group_by()` command from the dplyr package to group the dataset `Dat` by `country`. Save the result in `by.country`. Uncomment the `summarize(...)` command and run the code.
+
+```{r "3_4"}
+#< task
+# Enter your code here
+# summarize(by.country,count=sum(unique))
+#>
+#< hint
+display("...=group_by(...,country) ")
+#>
+by.country=group_by(Dat,country)
+summarize(by.country,count=sum(unique))
+```
+
+Although the UK has an obvious peak in observations we have overall a nice base for our study.
+
+
+# Differences by country
+
+In this part we want to investigate if there are any major differences in the vulnerability score for different countries. For this task we use the variable `country` in our dataset which represents the origin if each firm. In the previous part we already grouped our dataset by this variable, so we can direct move on to calculate the average VS in each country.
+
+**Task:**
+Use the `summarize()` command on the grouping `by.country` to calculate the new variable `VS` which shall be the mean of `fimpact_score_clean`. Save the result into `VS.by.country`.
+
+```{r "3_5"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("...=summarize(...,VS=mean(fimpact_score_clean)) ")
+#>
+VS.by.country=summarize(by.country,VS=mean(fimpact_score_clean))
+```
+
+Now let's have a look at what we calculated so far:
+
+**Task:**
+Just click `check` so see the data.
+
+```{r "3_6"}
+#< task
+VS.by.country
+#>
+```
+
+While a table with the exact values is always right choice, a nice plot is a more vivid approach to look at data. In this case a barplot will be a good choice. In this task we will use the `pirateplot()` routine from the package `yarrr`. If you want to know more about the `pirateplot()` routine be sure to check the info box.
+
+#< info "pirateplot()"
+The `pirateplot()` routine from the package `yarrr` is a function to easily create nice formatted barplots out of raw data. In comparsion to `ggplot()` we don't need to specify a grouping in order to create desired barplot. Moreover the command is realy easy. If for example we want to create a barplot where each bar represents the the average `score` for each `country` in the dataset `MyData` this can easily be done by
+
+```{r "3__1",eval=FALSE}
+library("yarrr")
+pirateplot(data=MyData, formula=score~country)
+```
+
+This gives us the wanted plot and additionally we get 95% highest density interval (or if wished the confidence interval).
+Since `pirateplot()` gives us a variety of options, be sure to check
+<a href="http://nathanieldphillips.com/2016/04/pirateplot-2-0-the-rdi-plotting-choice-of-r-pirates/" target = "_blank"> nathanieldphillips.com/2016/04/pirateplot-2-0-the-rdi-plotting-choice-of-r-pirates/</a>.
+#>
+
+
+**Task:**
+Just press `check` and have a look at the resulting plot.
+
+```{r "3_7"}
+#< task
+library("yarrr")
+pirateplot(data=Dat,formula=fimpact_score_clean~country, inf="ci", theme.o=1, pal="appletv", main="VS by country", xlab="Country", ylab="VS",point.o = 0)
+#>
+```
+
+*Note: While the thick horizontal line represents the mean VS of the country, the transculent box around it represents the 95% confidence interval*
+
+It seems like firms in Germany, France and Poland are more affected by carbon pricing than in the other countries but the differences are quite low. Moreover this effect levels out if we think about the following: In countries like Germany and France the debate about emission permits has a larger presence in the media than in some other countries. This higher presence can make managers more sensible fot this topic and therefore slightly raise the estimates VS. That being said leaves us with the result that we don't need to treat countries differently if we try to optimize the permit allocation. Now let's see if there are sectoral differences.
+
+#< award "Yarrr!"
+Yo ho ho, nice plot!
+#>
+
+# Differences by sector
+
+Analogously to the previous part we want to find out if some sectors are more affected to carbon pricing than others. For this task our dataset contains the variable `mcetsdig` which assigns different sectors to each firm. Let's see what characteristics `mcetsdig` does have.
+
+**Task:**
+Just click `check` and see what`s what.
+
+```{r "3_8"}
+unique(Dat$mcetsdig)
+```
+
+Now one might think that the really energy-intensive firms are a lot more vulnerable to carbon-pricing than the others. So let's find out.
+
+**Task:**
+Calculate the average vulnerability score for each group in `mcetsdig`. Use again the dataset `Dat` to compute what you need for this task. Save your grouping in `by.sector` and your final calculation in `VS.by.sector` and print it out. Use the same fashion as in the previous exercise.
+
+```{r "3_9"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("You need at least these two commands: `group_by()`, `summarize()` ")
+#>
+by.sector=group_by(Dat,mcetsdig)
+VS.by.sector=summarize(by.sector,VS=mean(fimpact_score_clean))
+VS.by.sector
+```
+
+#< award "I know how this works"
+Now you know how to properly group and transmute data.
+#>
+
+Again a nice barplot would be a more convenient choice to investigate the results but this time you need to use the `ggplot()` routine. Check the info box for more information on `ggplot()` and `geom_bar()`.
+
+#< info "ggplot() and geom_bar()"
+Both routines `ggplot()` and `geom_bar()` are part of the `ggplot2` package which provides us with a lot of nice function to generate plots. With the `ggplot()` routine we define which data we want to use as well as which variables shall be plotted along the x- and y-axis. This information can then be stored in a variable for a later use. For example we want to plot the dataset `MyData` with the variables `year` and `employees`. The x-axis shall be `year` and the y-axis `employees` and we want save this in `MyPlot`, we would proceed as follows: 
+
+```{r "3__1",eval=FALSE}
+library(ggplot2)
+MyPlot=ggplot(data=MyData,aes(x=year,y=employees))
+```
+
+You need more information on `ggplot()`? Go ahead and check 
+<a href="http://docs.ggplot2.org/current/ggplot.html" target = "_blank"> docs.ggplot2.org/current/ggplot.html</a>.
+
+Now that we have the information stored in `MyPlot`, we need to define what kind of plot shall be made. In our case we want to produce a barplot, so we use the routine `geom_bar()`. Or aim is the plot for each year in `year` a bar which represents the `employes` in this year. To do so we add the `geom_bar()` command to `MyPlot`. Furthermore we need to tell the command that the x-values shall be used as identifier. This can be done with `stat="identity"` like in this example:
+
+```{r "3__2",eval=FALSE}
+MyPlot+geom_bar(stat="identity")
+```
+
+This would produce the desired plot. 
+
+You need more information on `geom_bar()`? Go ahead and check 
+<a href="http://docs.ggplot2.org/current/geom_bar.html" target = "_blank"> docs.ggplot2.org/current/geom_bar.html</a>.
+
+As you can see you can add different aesthetics with a `+` to your plot. For example if your want to turn your plot you can use `coord_flip()` and add to your code.
+If you're interested in the hole `ggplot2` package, this is a good place to start your research:
+<a href="http://docs.ggplot2.org/current" target = "_blank"> docs.ggplot2.org/current</a>.
+#>
+
+**Task:**
+Create a barplot out of the data `VS.by.sector`. To do so save your `ggplot()` command into the variable `barplot.sector` and add the aesthetics `geom_bar()` and `coord_flip()` afterwards.
+
+```{r "3_10"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("barplot.sector=ggplot(...,aes(x=mcetsdig,y=VS)) and afterwards barplot.sector+geom.bar(stat=...)+coord_flip(). Fill out the ... ")
+#>
+barplot.sector = ggplot(VS.by.sector,aes(x=mcetsdig,y=VS))
+barplot.sector+geom_bar(stat="identity")+coord_flip()
+```
+
+#< award "Plotter"
+Congratulations, now you know some basic plotting routines!
+#>
+
+As we can see this gives us a slightly different result. Some firms with a high energy-consumption like Iron & Steel, Fuels, Glass and especially other minerals seem to be more vulnerable. We will take this to account when we try to optimize the permit allocation in the sense of optimizing across firms and optimizing across sectors.
+
+Before we set up our model for the optimal permit allocation we finish this exercise with a quiz.
+
+**Task:**
+Enter what you want in this chunk in order to solve the quiz.
+
+```{r "3__3", optional = TRUE}
+#< task_notest
+# Enter your command here
+#>
+```
+
+#< quiz "Quiz 3"
+parts:
+  - question: 1. Which sector has the highest and which the lowest average vulnerability score?
+    choices:
+        - Iron & Steel
+        - Fuels
+        - Construction*
+        - Vehicles
+        - Other Minerals*
+    multiple: TRUE
+    success: Great, your answer is correct!
+    failure: Try again.
+  - question: 2. Which country has the lowest VS?
+    choices:
+        - UK
+        - Hungary*
+        - Belgium
+        - France
+    multiple: FALSE
+    success: Great, your answer is correct!
+    failure: Try again.
+#>
+
+#< award "Professional Quizzer"
+
+#>
+
+
+## Exercise 4 Optimal Permit Allocation
+
+In this chapter we as legislator want to deduce a model which improves the actual law. As we have seen till now, our biggest concern will be the risk of relocation, i.e. firms that leave the country since the burden through GHG taxation is to high and they can be a lot profitable in less stringent countries. And like we said, this risk of relocation has 2 downsides since on one hand we have job losses and on the other hand the carbon leakage risk. We will take this to account when we derive the risk of relocation for each individual firm. 
+
+### A feasible model
+
+For a firm $i$ located in a country which is regulated through our policy we denote the firms profit by $\pi_i(p,q_i)$ where $q_i$ defines the number of free permits and $p$ the current permit price. Due to the fact that free permits are equal to a subvention to the firm, we can expect that 
+$\frac{\partial \pi_i(p,q_i)}{\partial q_i} \gt 0 \, \forall \, p \gt 0$. If the firm would leave the country to an unregulated country $f$, this firm $i$ would earn a profit of $\pi_{if}$ but would need to pay a relocation cost of $\kappa_i$. With that said a firm would relocate if $\pi_i(p,q_i) \lt \pi_{if} - \kappa_i$ in order to maximize their profit. While the government knows pretty accurate the firms profit in it's own country it doesn`t know about the net cost of relocation $\epsilon_i \equiv \kappa_i - \pi_{if}$, but it knows that the net cost $\epsilon_i$ is an independent and identically distributed random variable that follows a continuously differentiable distribution function $F_i(\dot)$ with mean $\mu_{\epsilon}$ and a standard deviation of $\sigma_{\epsilon}$. With this assumptions made we can state a binary relocation variable as follows
+$$ y_i \equiv \mathbf{1}_{(\epsilon_i \lt -\pi_i(p,q_i))}$$
+With this the government's estimation if a firm $i$ relocates is given by $P(y_i=1|p,q_i)=F_i(-\pi(p,q_i))$.
+As we said in the beginning the aim of these free permits to polluting industries is to minimize the risk of relocation and to keep them international competitive. For each individual firm $i$ we define their relocation risk as 
+$$ r_i(q_i)=F_i(-\pi_i(p,q_i)) \cdot (\alpha l_i(p) + (1-\alpha) e_i(p))$$
+in which we define $l_i(p)$ and $e_i(p)$ as the level of employment and emisson at a permit price $p$ for the firm $i$. Furthermore $\alpha$ shall be a weight the government assisgns to those attributes. This also implies that when a firm $i$ decides to relocate to an unregulated country, all of its emissons will leak to this country and also all jobs will be lost. With the individual relocation risk defined, we can easily state that the overall relocation risk $R$ is defined as $R=\sum_{i=1}^n r_i(q_i)$. With one last assumption we will be able to set our optimization problem: The overall cap $\bar{Q}$ on free permits will be exogenously fixed. This implies that the carbon price will be constant and can therefore be missed out.
+Now with that said the aim of the government will be to minimize the total damage inflicted by relocating. To achieve this goal it can dispense free permits to each firm without exceeding the overall cap $\bar{Q}$. Mathematically spoken this yields the following optimisation problem (primal program):
+$$\min_{q_i \ge 0} \sum_{i=1}^n r_i(q_i) \quad s.t. \quad \sum_i q_i \le \bar{Q}$$
+By assumption we know that if we give out an additional free permit we'll get a reduction in the probability of relocation (this is because $F_i(-\pi_i(p,qi_i))$ is a continuously differentiable distribution function). That said means that the shadow price $\lambda$ has to be positive and furthermore that our constraint has to hold with equality and we get the following first-order condition:
+$${F^'_i}(-\pi_i(q_i)) \frac{\partial \pi_i(q_i)}{\partial q_i} \cdot (\alpha l_i + (1-\alpha) e_i) = \lambda \quad \forall i$$
+This equation implies that we need to align the reduction of relocation with the last free permit assigned to this firm for each firm.
+Let's stress out the idea of the marginal relocation probabilities a little further. If we would observe two firms where the level of employment and abatement is the same but their probability of relocation is different, we shouldn't give the firm with the higher relocation probability the free permits but the firm where the free permits bring the biggest reduction in the relocation probability.
+To fully state an optimization problem we need to frame the dual program. Aim of it is to minimize the number of free permits given out while keeping the overall relocation risk under the level $\bar{R}$. Again mathematically spoken:
+$$\min_{q_i \ge 0} \sum_{i=1}^n q_i \quad s.t. \quad \sum_i r_i(q_i) \le \bar{R}$$
+
+### Solving numerically
+
+With our assumptions made and our model set up it is time to solve the programs. Since we want to take in account different relocation probability functions a numerically approach by using dynamic programming seems to be a good choice. That being said we want to take a closer look at the primal program.
+
+Programs with the above discussed properties are also known as cake-eating problems since we want do distribute a fixed 'cake' (in our case our caps $\bar{R}$ and $\bar{Q}$) optimally. But instead distributing it over time we want to distribute in across firms. So by setting an arbitrary ordering of the firms we can apply the Bellman equation to our program which lets us break down our program into simpler task. With that stated we can rewrite our problem to
+$$V_i(s_i)=\min_{0 \le q_i \le s_i} F_i(-\pi_i(q_i))(\alpha l_i + (1+\alpha) e_i) + V_{i+1}(s_i-q_i)$$.
+In this recursive formulation $s_i$ denotes the amount of total permits left when reaching firms $i$ while $V_i()$ is the so called value function. We can solve this system by beginning with the last firm $N$ in the sequence which function is given by $V_N(s_N)=F_N(-\pi_N(q_N))(\alpha l_N + (1+\alpha) e_N)$ and then iterate backwards to get the optimal $q_i$'s. 
+In the same fashion we can derive a recursive formulation of the dual program. By inverting the relocation risk $r_i(q_i)$ of an individual firm $i$ we get $q_i=\pi_i^{-1}\left[-F_i^{-1}\left(\frac{r_i}{\alpha l_i + (1-\alpha)e_i}\right)\right]$. Now we can plug that into the dual program and apply the Bellman equation to get
+$$W_i(s_i)=\min_{0 \le r_i \le s_i} \pi_i^{-1}\left[-F_i^{-1}\left(\frac{r_i}{\alpha l_i + (1-\alpha)e_i}\right)\right] + W_{i+1}(s_i-r_i) $$
+Again we can solve this problem with the same approach as for the primal program. If you want to read more about cake-eating problems and a dynamic programming approach, I recommend Adda and Cooper (2003).
+
+### Estimating $F_i$
+
+Before we can solve our programs for different scenarios we need to estimate the marginal propensity to relocate. To do so we will use our VS from the interview responses but first we need to make some assumptions:
+- We assume a linear approximation of the profit function, i.e. $\pi_i(q_i)=\delta_{0i}+\delta_{1i}q_i$
+- We assume that the unobserved net cost of relocation $\epsilon_i$ follows a logistic distribution
+
+With these assumptions made we can rewrite the relocation probability to
+$$P(y_i=1|q_i)=F_i(\pi_i(q_i))=\frac{1}{1+exp(\beta_{0i}+\beta_{1i}q_i)}$$
+where we define $\beta_{0i}=\frac{\delta_{0i}+\mu_{\epsilon}}{\sigma_{\epsilon}}$ and $\beta_{1i}=\frac{\delta_{1i}}{\sigma_{\epsilon}}$. Our VS reflects the probability that a firm relocates if they wouldn't get any free allocation at all. Another question of the interview was how the VS would change if the firm would get free allocation for 80 percent of their emissons. With the mapping from VS to probabilities we get values for $P(y_i=1|q_i=0)$ and $P(y_i|q_i=0.8e_i)$ for each firm. With these we can claculate $\beta_{0i}$ and $\beta_{1i}$ by rearranging the relocation probability to 
+$\beta_{0i}=\ln{\left( \frac{1-P(y_i=1|q_i=0)}{P(y_i=1|q_i=0)} \right)}$ and
+$\beta_{1i}=\frac{1}{0.8e_i}\left(\ln{\left( \frac{1-P(y_i=1|q_i=0.8e_i)}{P(y_i=1|q_i=0.8e_i)} \right)}-\beta_{0i}\right)$ and thus get our estimates for $F_i(\cdot)$ for each firm.
+
+
+With all these assumptions made and the model set up we can pass our problem to a numerical solver for so called cake-eating problems where a fixed pie (in our case the threshold values for emissions or permits, i.e. the $\bar{R}$ or the $\bar{Q}$) is distributed optimally (in our case across firms or sectors). 
+
+Now since executing 16 different optimization problems for 344 observations each is quite time consuming, we will only investigate the results in the next exercise but first let's finish with a quiz.
+
+
+
+#< quiz "Quiz 4"
+parts:
+  - question: 1. What does alpha in our model represent?
+    choices:
+        - A factor in the firms profit function
+        - Weight of job loss and carbon leakage in the objective's function*
+        - Probability that a firm relocates
+    multiple: FALSE
+    success: Great, your answer is correct!
+    failure: Try again.
+  - question: 2. What are R (bar) and Q (bar)?
+    choices:
+        - Estimates for the relocation probability of a firm under different allocations
+        - Caps for risk and permits*
+        - Threshold values for emissions each firm has to undergo
+    multiple: FALSE
+    success: Great, your answer is correct!
+    failure: Try again.
+#>
+
+
+#< award "Quizzing for a living"
+Well done, you finished the quiz from exercise 4!
+#>
+
+
+## Exercise 5 Exploring the Results
+
+In this chapter we want to find out if our efforts to optimize the allocation of free permits was successful. Because our model allows different assumptions we to split this up in two major topics. First the aim of the government shall be the cost reduction as we want to minimize the amount of free permits. The second aim shall be to minimize the relocation risk. For both cases we want to assume different weights for the damage of job losses and carbon leakage (represented in the formula as $\alpha$) as well as optimize on a firm- and on the sector-level. Furthermore we want to compare the results to phase II (grandfathering) and to phase III (benchmarking) of the EU ETS to get a better understanding.
+
+
+### Minimizing the cost
+
+The idea to minimize the permits allocated for free can be seen as the approach to minimize the amount of taxpayers' money allocated to the firms while keeping the risk of relocation at a constant level. This also means that the government could earn additional revenue since a lot more permits would be traded on the market. That being said we need to load the data to get a better insight.
+
+**Task:**
+Load the dataset `optimal_firm_done.dta` and assign it to the variable `firm`.
+
+```{r "5_1"}
+#< task
+# Enter your code here
+#>
+firm = read.dta("optimal_firm_done.dta")
+```
+
+In this dataset we have standard information about the firms that have taken part in the interview. Moreover we have information about the optimized free permits allocated to these firms under different assumptions. We want to pick them apart one by one. So first we need our reference scenario. In the variable `allo` we have information about the costs of the free permits given away to the firms. We need to sum up theses costs as this will be our reference level.
+Also we sum up the costs of the permits given out for free in 5 other cases and divide them by our reference scenario. These five cases are stored in the following variables:
+- `opti_emp_allo_cost`: We fix the risk of job losses ($\alpha$ = 1) at the level resulting from grandfathering and then optimized to calculate the cost of the free permits given out to each firm
+- `opti_co2_allo_cost`: This time we fix the risk of emisson leakage ($\alpha$=1) at the level resulting from grandfathering
+- `bench`: The cost of the free permits given out under the benchmark-decision
+- `opti_emp_bench_cost`: The cost of free permits given out by fixing the job risk at the level resulting from benchmarking
+- `opti_co2_bench_cost`: The cost of the free permits given out by fixing the risk of emission leakage at the level resulting from benchmarking
+
+The difference in the risk level of grandfathering and benchmarking arises through the fact that under benchmarking only around half of the free permits given out under grandfathering where given out, resulting in a higher risk of relocation. This higher risk (either in job losses or emission leakage) gives us a higher cap $\bar{R}$ in the optimisation problem.
+
+**Task:**
+Sum up over all the described variables. Save the results in the variables `sum.allo`, `sum.emp.allo`,`sum.co2.allo`,`sum.bench`,`sum.emp.bench` and `sum.emp.bench` accordingly. Use the `summarise()`command for this task and save the result in `cost.min`.
+
+```{r "5_2"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("cost.min=summarise(firm,...) should be the basic parts of your code")
+#>
+cost.min=summarise(firm,sum.allo=sum(allo),sum.emp.allo=sum(opti_emp_allo_cost),
+                   sum.co2.allo=sum(opti_co2_allo_cost),sum.bench=sum(bench),
+                   sum.emp.bench=sum(opti_emp_bench_cost),sum.co2.bench=sum(opti_co2_bench_cost))
+```
+
+Before we look at what we calculated we want to transform that costs of the permits into shares of the costs of the permits given out under grandfathering. This can easily be done by calculating $share.scenario=\frac{cost.scenario}{cost.reference}*100$
+
+**Task:**
+Divide the dataset by the value of `sum.allo` and multiply all by $100$ to get the shares in percentage. Afterwards print it out.
+
+```{r "5_3"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("To divide a dataset by a variable you can type: cost.min/cost.min$sum.allo")
+#>
+cost.min=100*cost.min/cost.min$sum.allo
+cost.min
+```
+
+So let's interpret those shares. The first three variables are based on the risk of relocation associated with grandfathering and a firm-level optimization of the free permits. To keep the same level of risk it would be enough to allocate between $14.3$ and $24.5$ percent of the permits given out under grandfathering for free to the firms, depending on our assumptions about the weight of each risk (job loss and carbon leakage), which would be a huge increase in efficiency. 
+
+Now to the other 3 variables: In the benchmarking scenario around $52.3$ percent of the permits that are given out in the grandfathering scenario are given for free. But this shortage raises the overall risk in this scenario and therefore pushes our improvements even further. With the higher threshold for risk we can reduce the amount of free permits to between $1.6$ to $13.0$ percent of the free permits used in the grandfathering scenario.
+That being said we see that there is a quite big opportunity to raise the income of the auctioning with emission permits while not exceeding the risk of carbon leakage or job loss.
+
+
+### Reducing the relocation risk
+
+Another aim of the government can be to reduce the overall risk of relocation in order to be an more attractive location for business. We took this into account in our optimization by keeping the free permits given out to firms or sectors at a fixed value $\bar{Q}$. As before we want to compare different scenarios (grandfathering and benchmarking) as well as different aims of the government (reducing job losses or carbon leakage). First up we want to reduce the risk of job losses. In our dataset we have information about the allocation in each different scenario and the estimates for $\beta_{0i}$ and $\beta_{1i}$. We want to apply these values to the formula we derived in the previous chapter 
+$$ F_i(-\pi_i(q_i))=\frac{1}{1+exp(\beta_{0i}+\beta_{1i}q_i)} $$
+to calculate the relocation probability and with that calculate the individual risk of relocation for each individual firm by
+$$ r_i(q_i)=F_i(-\pi_i(q_i))(\alpha*l_i+(1-\alpha)*e_i)$$
+Finally we want to take the sum over the individual risks to get an estimate of the risk of relocation in each scenario. We begin with calculating the risk of job losses under grandfathering.
+
+#< info "Variables of interest 4"
+- `co2`: Emissions at each firm
+- `emp`: Employment at each firm
+- `beta0`: The beta0 from the model
+- `beta1`: The beta1 from the model
+#>
+
+
+**Task:**
+Calculate the individual relocation probability for each firm in the grandfathering scenario. The variable `allo` contains the number of free permits given out to each firm in this scenario (the $q_i$). The variables `beta0` and `beta1` contain the estimates for each firm. Use the `mutate()` command for this task, save your calculation in the variable `prob.grand` and you hole dataset in `firm`. 
+
+```{r "5_4"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("Look at your previous plot, it's nearly the same. And just a little coord flip at the end ")
+#>
+firm=mutate(firm,prob.grand=1/(1+exp(beta0+beta1*allo)))
+```
+
+With the relocation probability calculated we need to multiply by the aim of the government. As said we first want to reduce job losses, therefore our $\alpha$ equals 1 and we need to multiply by the level of employment $l_i$ which is the employment at firm i divided by the total sum of employment $\left(l_i = \frac{{\textrm{employment}}_i}{\sum \textrm{employment}_i} \right)$.
+
+**Task:**
+Use again the `mutate()` command to calculate the level of employment $l_i$. Save the result in `level.emp` and save the dataset in firm.
+
+```{r "5_5"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("Look at your previous plot, it's nearly the same. And just a little coord flip at the end ")
+#>
+firm=mutate(firm,level.emp=emp/sum(emp))
+```
+
+In our dataset `firm` we have now for each firm the probability to relocate under grandfathering `prob.grand` and the level of employment `level.emp`. To get the risk associated to the relocation of a firm we need simply to multiply, i.e. $\textrm{relocation risk of firm i} = \textrm{probability to relocate of firm i} \times \textrm{level of employment at firm i}$. Moreover by summing up these risks over all firms we get estimate of the overall risk in a scenario.
+
+**Task:**
+Use the `summarize()` command to sum up the risk in the grandfathering scenario. Save it in the variable `risk.grand` and your whole dataset in `risk`. Finally print out the risk.
+
+```{r "5_6"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("...=summarize(...,risk.grand=sum(...*...) should be your first code line")
+#>
+risk=summarize(firm, risk.grand=sum(prob.grand*level.emp))
+risk
+```
+
+Let's explain this estimate. In the scenario of grandfathering (phase II of the EU ETS) and when the only concern of the government is risk of job losses around $0.04156413 * 100 = 4.16%$ of all jobs of our sample are at risk of relocation. Now we want to compare this to what we can achieve through optimal permit allocation across firms and sectors. To do so we need to load a second dataset which contains the estimates for optimal permit allocation across sectors.
+
+**Task:**
+Load the dataset `optimal_sector_done.dta` and save it into the variable `sector`.
+
+```{r "5_7"}
+#< task
+# Enter your code here
+#>
+sector = read.dta("optimal_sector_done.dta")
+```
+
+Our next step will be to merge the two datasets `firm` and `sector` into one dataset. For this task you will need the `merge()` command. If you`re not familiar with this command, go ahead and check the info-box.
+
+#< info "merge()"
+The command `merge()` is a basic R command to combine 2 datasets into one. With it you can perform types of merging like natural join, right outer join and full outer join and we can define by which variable it shall be combined. 
+If for example we want to combine two datasets `MyData1` and `MyData2` which both contain the variable `year` and we want to merge them by this variable into a new data called `NewData` this can be done by
+
+```{r "5_",eval=FALSE}
+NewData=merge(MyData1,MyData2,by="year")
+```
+
+Now our new dataset `NewData` consists of the variable `year` and the variables of `MyData1` and `MyData2` in the right order,
+
+You need more information on `merge()`? Go ahead and check <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/merge.html" target = "_blank"> stat.ethz.ch/R-manual/R-devel/library/base/html/merge.html</a>.
+
+#>
+
+
+**Task:**
+Merge the two datasets by the variable `id` and save the new dataset into `optimal`.
+
+```{r "5_8"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("optimal=merge(...,...,by=\"id\") Now just fill out the ... ")
+#>
+optimal=merge(firm,sector,by="id")
+```
+
+Again we want to calculate the risk of relocation. Due to the merging some variables have slightly changed their names so watch out, but for now we will only look at the two variables `opti_emp_allo_risk` and `sopti_emp_allo_risk` where we optimized the allocation in the grandfathering setup (a slightly higher $\bar{Q}$) across firms and sectors in order to minimize the risk of job loss.
+
+**Task:**
+Calculate the risk arise through optimising across firms and across sectors in the same fashion as above. Be aware that these variables changed their names in the dataset `optimal`:
+- `emp` is now `emp.x`
+- `beta0` is now `beta0.x`
+- `beta1` is now `beta1.x`
+Try to do it all with only `summarize()` command. Save the firm-level risk in `risk.firm` and the sector-level risk in `risk.sector` and save the hole dataset in `emp.allo`.
+
+```{r "5_9"}
+#< task
+# Enter your code here
+#>
+#< hint
+display("emp.allo=summarize(optimal,risk.firm=...,risk.sector=...) Now fill out the ... ")
+#>
+emp.allo=summarize(optimal,
+                   risk.firm=sum((1/(1+exp(beta0.x+beta1.x*opti_emp_allo_risk)))*emp.x/sum(emp.x)),
+                   risk.sector=sum((1/(1+exp(beta0.x+beta1.x*sopti_emp_allo_risk)))*emp.x/sum(emp.x)))
+emp.allo
+```
+
+For the firm-level optimization we have around $2.93%$ and for sector-level around $3.23%$ of jobs at risk. This means that by the same amount of permits given out as in the grandfathering scenario our average risk drops around one percentage point. Now we want to see if the same holds if the reference scenario is benchmarking which leaves us with a lower amount of permits we can distribute.
+
+**Task:**
+This time the code is already given. Just press check and see what we achieved.
+
+```{r "5_10"}
+#< task
+emp.bench=summarize(optimal,risk.bench=sum((1/(1+exp(beta0.x+beta1.x*bench.x)))*emp.x/sum(emp.x)),
+                       risk.firm=sum((1/(1+exp(beta0.x+beta1.x*opti_emp_bench_risk)))*emp.x/sum(emp.x)),
+                       risk.sector=sum((1/(1+exp(beta0.x+beta1.x*sopti_emp_bench_risk)))*emp.x/sum(emp.x)))
+# We multiply by 100 to get percentage
+emp.bench=emp.bench*100
+display("Share of employment at risk")
+display("Reference scenario: Benchmarking")
+emp.bench
+#>
+```
+
+While in the benchmarking scenario around $6.92%$ of all jobs are at risk of relocation we can lower that risk with optimal permit allocation on a firm-level to $2.9%$ and even with sector-level allocation to $4.51%$ which is quite a nice improvement. Finally we want to look at what we have achieved if the government's main concern would be carbon leakage. In our formula this would mean that $\alpha=0$ throughout our calculations and we would need to weight it by the level of emisson $e_i$ which is defined as $e_i = \frac{{\textrm{emisson}}_i}{\sum \textrm{emisson}_i}$.
+
+**Task:**
+By now you know how it all works so simply press check and investigate the data.
+
+```{r "5_11"}
+#< task
+co2.allo=summarize(optimal,risk.allo=sum((1/(1+exp(beta0.x+beta1.x*allo.x)))*co2.x/sum(co2.x)),
+                       risk.firm=sum((1/(1+exp(beta0.x+beta1.x*opti_co2_allo_risk)))*co2.x/sum(co2.x)),
+                       risk.sector=sum((1/(1+exp(beta0.x+beta1.x*sopti_co2_allo_risk)))*co2.x/sum(co2.x)))
+# We multiply by 100 to get percentage
+co2.allo=co2.allo*100
+
+co2.bench=summarize(optimal,risk.bench=sum((1/(1+exp(beta0.x+beta1.x*bench.x)))*co2.x/sum(co2.x)),
+                       risk.firm=sum((1/(1+exp(beta0.x+beta1.x*opti_co2_bench_risk)))*co2.x/sum(co2.x)),
+                       risk.sector=sum((1/(1+exp(beta0.x+beta1.x*sopti_co2_bench_risk)))*co2.x/sum(co2.x)))
+# We multiply by 100 to get percentage
+co2.bench=co2.bench*100
+
+display("Share of emissions at risk")
+display("Reference scenario: Grandfathering")
+co2.allo
+display("Reference scenario: Benchmarking")
+co2.bench
+#>
+```
+
+As we can see we get a nice improvement when our reference scenario is grandfathering where we can decrease the shares of emissions at risk between $1.32$ and $2.51$ percentage points with optimal permit allocation either across sectors or firms. But when the reference scenario is benchmarking which has a higher baseline risk due to the lower amount of permits given out we get a huge decrease by $9.59$ percentage points by giving out the permits with optimal permit allocation across firms but only a decrease of $0.88$ percentage points if we optimize across sectors. This succes of benchmarking is mainly driven by its within-sector allocation.
+
+Now before we finish this problem set with a conclusion, it's time for one last quiz.
+
+**Task:** 
+You can enter whatever you think is needed to solve the quiz here.
+
+```{r "5__13", optional = TRUE}
+#< task_notest
+# Enter your command here
+#>
+```
+
+
+#< quiz "Quiz 5"
+parts:
+  - question: 1. What's the value of allocations that the firm with the id 3 received under benchmarking? 
+    choices:
+          - 123.605
+          - 12360.5
+          - 15780.38*
+          - 74651.45
+    multiple: FALSE
+    success: Great, your answer is correct!
+    failure: Try again.
+  - question: 2. Which scenario allows a higher risk level?
+    choices:
+          - Grandfathering
+          - Benchmarking*
+          - Risk level is the same for each scenario
+    multiple: FALSE
+    success: Great, your answer is correct!
+    failure: Try again.    
+#>
+
+#< award "The godfather of quizzes"
+Nice, you solved the last quiz and finished the problem set!
+#>
+
+Now that we are finished with the optimal permit allocation we want to recap in the next exercise what we achieved throughout this problem set and state some final thoughts.
+
+
+## Exercise 6 Conclusion
+
+In our problem set we were interested in finding out how governments can optimally subsidize firms that suffer international competitiveness due to laws that regulate negative aspects of the industry. With the argument of these firms that they have to relocate to unregulated countries the governments are forced to intervene the market since relocation of firms means job losses, loss of taxes and emissions which were in our case the aspect we wanted to regulate. We therefore derived a model that minimizes the expected damage emerging through relocation. This model distributes subsidies across firms or sectors as to equalize their impact on the objective function of the government. We afterwards compared our model to the EU ETS, the biggest cap-and-trade scheme for emissions, where subsidies were given out as free permits in order to decrease the risk of relocation. We then found out that we could achieve large reductions in job risk and emission leakage in comparision with the actual compensation rules. Moreover we also stated that our model needs far less free permits to maintain the same risk of relocation as through the current rules. This also implies a higher auction revenue since more permits would be traded in auctions and therefore we could minimize that social cost of the policy.
+
+While our approach takes the objectives stated by the EU ETS (prevention of carbon leakage and job losses through relocation) and achieves significant improvements over that actual allocation rules it can be debatable if these are the only objectives of the policy and therefore the free permits were given out more generous. It may be plausible that this might have happened in order to build a stronger political support by subsidizing carbon and trade intensive sectors in the beginning of the cap-and-trade system. Moreover since the data we use for the estimates of the relocation probability originates from interview data these values can be manipulated from the firms in order to fake a higher relocation probability and therefore get more free permits if we would apply this scheme to the actual situation. A possible solution to this can be to derive a mechanism based on publicity available firm characteristics.
+
+Independent of this facts our results show that further researches in the topic of optimal permit allocation and in the relocation propensities of firms will be beneficial for the governments objectives as well as for the tax payers. More generally speaking the approach of optimal permit allocation can be adopted to a variety of scenarios where compensation schemas are in charge in order to establish a more efficient policy.
+
+If you want to see the awards that you collected, just press `edit` and `check` afterwards. In total there were $10$ awards you could achieve.
+
+```{r "6_"}
+#< task
+awards()
+#>
+```
+
+
+I hope you had fun solving this problem set. If so, be sure to check 
+<a href="https://github.com/skranz/RTutor" target = "_blank"> github.com/skranz/RTutor</a>
+for more interesting problem sets.
+
+
+
+
+## Exercise 7 References
+
+
+### Bibliography
+
+- European Union, European Commisson: "EU ETS Handbook", http://ec.europa.eu/clima/policies/ets/index_en.htm (accessed April 2016)
+- European Parliament, Council of the European Union (2009): "Directive 2009/29/EC", Official Journal of the European Union, http://eur-lex.europa.eu/legal-content/EN/TXT/?uri=celex%3A32009L0029 (accessed April 2016)
+- Ralf Martin, Mirabelle Muuls, Laura B. de Preux, Ulrich J. Wagner (2014): "Industry Compensation under Relocarion Risk: A Firm-Level Analysis of the EU Emisson Trading Scheme", American Economic Review 104 (8): 2482-2508
+- A. Denny Ellerman and Paul L. Joskow (2008): "The European Union's Trading System in Perspective", Report prepared for the Pew Center on Global Climate Change
+- A. Denny Ellerman, Frank J. Convery, Christian de Perthuis (2010): "Pricing Carbon", Cambridge University Press
+- James H. Stock and Mark W. Watson (2015): "Introduction to Econometrics", Pearson
+- J. Adda and R. Cooper (2003): "Dynamic Economics: Quantitative Methods and Applications", MIT Press
+
+### R and Packages in R
+- Wickham, H. and Francois, R. (2015): dplyr. "A Grammar of Data Manipulation", R package version 0.5.0, http://cran.r-project.org/web/packages/dplyr/index.html 
+- R Core Team (2015): foreign. "Read Data Stored by Minitab, S, SAS, SPSS, Stata, Systat, Weka, dBase, ...", R package version 0.8-66, http://cran.r-project.org/package=foreign 
+- R Development Core Team (2015). R. "A language and environment for statistical computing, R Foundation for Statistical Computing", Vienna, Austria.  http://www.r-project.org 
+- Kranz, S. (2015): RTutor. "Creating R problem sets with automatic assessment of student's solutions", R package version 2015.12.16, https://github.com/skranz/RTutor 
+- Wickham, H. and Winston, C. (): ggplot2. "An Implementation of the Grammer of Graphics", R package version 2.1.0, https://cran.r-project.org/web/packages/ggplot2/index.html
+- Phillips, N. (2016): yarrr. "A companion to the e-book YaRrr!: The Pirate's Guide to R", R package version 0.1, http://nathanieldphillips.com/2015/10/yarrrpackage/
+- Hlavec, M. (2015): stargazer. "Well-Formatted Regression and Summary Statistics Tables", R package version 5.2, http://CRAN.R-project.org/package=stargazer

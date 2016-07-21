@@ -1,0 +1,48 @@
+orgvar | var | descr
+
+sec4dig | sec4dig | The NACE four-digit level code of a firm
+vv_xxx0 | vv_xxx0 | Represents the carbon intensity of the firm (CI)
+tt_xxx0 | tt_xxx0 | Represents the trade intensity of the firm (TI)
+ninstallations | ninstallations | The number of installations of a firm
+nonmanufacturing | nonmanufacturing | Indicator if a firm is manufacturing. 1 if not manufacturing, NA if manufacturing
+CI.mean | CI.mean | Average CI of a sector
+TI.mean | TI.mean | Average TI of a sector
+sum.installations | sum.installations | Number of installations in a NACE four-digit sector
+notETS | notETS | Indicator if a firm is part of the EU ETS
+xquad | xquad | Represents the group we defined in Exercise 2. Can be A, B&CI<5, B&CI>5, C, not exempt, NA.
+countid | countid | Share of a firm in given sector when firm is multi sector
+empBigorbis | empBigorbis | Total firm level employment
+surr | surr | Average of permits surrendered in 2007 and 2008
+oneOsum | oneOsum | Share of installations per firm
+empOsum | empOsum | Share of employees per firm
+surrOsum | surrOsum | Share of emissions per firm
+firms | firms | Share of installations of a group
+employees | employees | Share of employees of a group
+emissions | emissions | Share of emissions inside a group
+f_impact_score_clean |f_impact_score_clean | The interview response of the firm (the VS)
+unique | unique | Indicator if a firm was interviewed
+country | country | Country in which the firm is located
+mcetsdig | mcetsdig | Industrial sectors within the EU ETS
+count | count | quantity of different interviews
+
+allo | allo | free permits given away under grandfathering
+opti_emp_allo_cost | opti_emp_allo_cost | optimized amount of permits given away, objective: minimize cost, weight: employment, reference: grandfathering
+opti_co2_allo_cost | opti_emp_allo_cost | optimized amount of permits given away, objective: minimize cost, weight: emissions, reference: grandfathering
+bench | bench | free permits given away under benchmarking
+opti_emp_bench_cost | opti_emp_allo_cost | optimized amount of permits given away, objective: minimize cost, weight: employment, reference: benchmarking
+opti_co2_bench_cost | opti_emp_allo_cost | optimized amount of permits given away, objective: minimize cost, weight: emissions, reference: benchmarking
+sum.allo | sum.allo | Reference scenario: has to be 100%
+sum.emp.allo| sum.emp.allo | optimized share of permits given out in proportion to grandfathering, risk in proportion to grandfathering, weight: employment
+sum.co2.allo | sum.co2.allo | optimized share of permits given out in proportion to grandfathering, risk in proportion to grandfathering, weight: emissions
+sum.bench | sum.bench | share of permits given out under benchmarking in proportion to grandfathering
+sum.emp.bench | sum.emp.bench | optimized share of permits given out in proportion to grandfathering, risk in proportion to benchmarking, weight: employment
+sum.co2.bench | sum.co2.bench | optimized share of permits given out in proportion to grandfathering, risk in proportion to benchmarking, weight: emissions
+risk.grand | risk.grand | Overall risk of relocation under grandfathering
+risk.allo | risk.allo | Overall risk of relocation under grandfathering
+risk.firm | risk.firm | Overall risk of relocation under firm-level optimization
+risk.sector | risk.sector | Overall risk of relocation under sector-level optimization
+risk.bench | risk.bench | Overall risk of relocation under benchmarking
+co2 | co2 | emissions at each firm
+emp | emp | employees at each firm
+beta0 | beta0 | estimated value of beta0
+beta1 | beta1 | estimated value of beta1

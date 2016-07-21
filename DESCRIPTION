@@ -1,0 +1,11 @@
+Package: RTutorOptimalCO2
+Type: Package
+Title: RTutor problem set RTutorOptimalCO2
+Version: 0.1
+Date: 2016-20-07
+Author: Andreas Unkauf
+Maintainer: Andreas Unkauf <andreas.unkauf@uni-ulm.de>
+Description: RTutor problem set RTutorOptimalCO2
+License: Problem set content: Creative Commons (CC BY-SA)
+	Package code: GPL >= 2.0
+Depends: RTutor, ggplot2, foreign, dplyr, yaml, stargazer, yarrr
