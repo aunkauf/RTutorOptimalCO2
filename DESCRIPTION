@@ -8,4 +8,4 @@ Maintainer: Andreas Unkauf <andreas.unkauf@uni-ulm.de>
 Description: RTutor problem set RTutorOptimalCO2
 License: Problem set content: Creative Commons (CC BY-SA)
 	Package code: GPL >= 2.0
-Depends: RTutor, ggplot2, foreign, dplyr, yaml, stargazer, yarrr
+Depends: RTutor, ggplot2, foreign, dplyr, yaml, stargazer, yarrr, lmtest, sandwich
