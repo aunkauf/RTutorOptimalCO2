@@ -26,9 +26,8 @@ stop.without.error()
 ```
 #>
 
-
 In this problem set we want to analyze industry compensation under the risk of relocation.
-To do so, we gradually reproduce the paper **"Industry Compensation under Relocation Risk: A Firm-Level Analysis of the EU Emissions Trading Scheme"** written by Ralf Martin, Mirabelle Muls, Laure B. de Preux and Ulrich J. Wagner published in 2014 in which they derive efficient permit allocation rules in order to reduce carbon leakage and job risk without increasing compensation in the scenario of the EU ETS.
+To do so, we gradually reproduce the paper **"Industry Compensation under Relocation Risk: A Firm-Level Analysis of the EU Emissions Trading Scheme"** written by Ralf Martin, Mirabelle Muûls, Laure B. de Preux and Ulrich J. Wagner published in 2014 in which they derive efficient permit allocation rules in order to reduce carbon leakage and job risk without increasing compensation in the scenario of the EU ETS.
 The original paper and the data can be obtained from the website of the *American Economic Association* (Both can be found here: [link](https://www.aeaweb.org/articles?id=10.1257/aer.104.8.2482) )
 
 ## Exercise Overview
@@ -50,33 +49,33 @@ The original paper and the data can be obtained from the website of the *America
   7. References
   
 
-*Note: This will be the recommended order to work through the problem set but if required individual parts can be skipped. Bear in mind that later exercises rely on knowledge and information achieved in early exercises. Finally you need solve the tasks in each exercise in the given order.*
+*Note: This will be the recommended order to work through the problem set but if required individual parts can be skipped. Bear in mind that later exercises rely on knowledge and information achieved in early exercises. Finally you need to solve the tasks of each exercise in the given order.*
 
 
 
 ## Exercise 1 - Introduction
 
-In this exercise we just want to set a basic knowledge for the given scenario and have a first peak on the given data we are going to use.
+In this exercise we just want to set a basic knowledge for the considered scenario and have a first peak on the given data we are going to use.
 
 
 ### The EU Emission Trading Scheme
 
-Since we want to analyze how we can optimize permit allocation throughout the EU Emissions Trading Scheme (EU ETS), we first try to understand how the EU ETS works.
-The objective of the EU ETS is, to reduce the pollution of greenhouse gas emissions in all partaking 31 countries by setting an overall cap on CO2 emissions from all stationary sources. All affected emitters can subsequently trade their permits to pollution with each other and therefore lower their individual production costs. By gradually reducing the overall cap of CO2, the price of the permits begin to rise. While for firms which can easily and cheaply reduce their emissions this is an appeal to so in order to establish their profit, firms with high cost of reducing their emissions are facing a lot of additional costs.
-These additional cost however are for many firms an appeal to relocate to an unregulated country in order to stay competitive on the market (see Ellerman et al. (2010, p. 193-195)). This risk of relocation, which is composed of job losses and carbon leakage, is the main driving reason that forced politicians to weaken the policy and give sectors and sub-sectors with a high risk of relocation a higher share of free permits. In the phases I and II of the EU ETS this was mainly done by grandfathering while since phase III the allocation is made by benchmarking. If you need more information on grandfathering and benchmarking, take a look at Ellerman et al. (2010, p. 60-67) or check the info box below.
+Since we want to analyze how we can optimize permit allocation throughout the EU Emissions Trading Scheme (EU ETS), we first need to understand how the EU ETS works.
+The objective of the EU ETS is, to reduce the pollution of greenhouse gas emissions in all partaking 31 countries by setting an overall cap on CO2 emissions from all stationary sources. All affected emitters can subsequently trade their permits to pollution with each other and therefore lower their individual production costs. By gradually reducing the overall cap of CO2, the price of the permits begin to rise. While for firms which can easily and cheaply reduce their emissions, this is an appeal to so in order to establish their profit, firms with high cost of reducing their emissions are facing a lot of additional costs.
+These additional cost however are for many firms an appeal to relocate to an unregulated country in order to stay competitive on the market (see Ellerman et al. (2010, p. 193-195)). This risk of relocation, which is composed of job losses and carbon leakage, is the main driving reason that forced politicians to weaken the policy and give sectors and sub-sectors with a high risk of relocation a higher share of free permits. In the phases I and II of the EU ETS this was mainly done by grandfathering, while since phase III the allocation is made by benchmarking. If you need more information on grandfathering and benchmarking, take a look at Ellerman et al. (2010, p. 60-67) or check the info box below.
 
 #< info "Grandfathering and Benchmarking"
-For phase I (2005-2007) and II (2008-2012) free permits were allocated in a decentralized fashion. Each partaking country had to state Nation Allocation Plans in which they determined a national cap as well as how the permits were spread across the sectors. To set this up most countries chose to grandfather the allocations of their firms, i.e. they looked at the historical emissions and adjusted them to meet the specified criteria of the EU.
+For phase I (2005-2007) and II (2008-2012) free permits were allocated in a decentralized fashion. Each partaking country had to state Nation Allocation Plans in which they determined a national cap as well as how the permits were spread across the sectors. To set this up most countries have chosen to grandfather the allocations of their firms, i.e. they looked at the historical emissions and adjusted them to meet the specified criteria of the EU.
 
 In phase III (2013 - 2020) this allocation schema changed towards benchmarking decision. For each product a benchmark was stated as the average emission needed to produce this product by the best 10 percent of installations producing this item inside the EU. Afterwards each installation was measured against this benchmark and each installation got their free permits accordingly. 
 
 #>
 
-While firms in sectors with an average risk of relocation get a share of 80% in 2013 and declining to 30% in 2020 of their benchmarked product pollution for free in phase III, firms in a sector with a high risk of relocation are granted 100% of their benchmarked product permits for free and therefore only need to auction a small amount of permits (see EU ETS Handbook (2015, p. 24)). 
+While firms in sectors with an average risk of relocation get a share of 80% in 2013 and declining to 30% in 2020 of their benchmarked product permits for free in phase III, firms in a sector with a high risk of relocation are granted 100% of their benchmarked product permits for free and therefore only need to auction a small amount of permits (see EU ETS Handbook (2015, p. 24)). 
 Now since the European Commission (EC) considers sectors at a high risk of relocation if they surpass certain threshold values for carbon intensity (CI) and/or trade intensity (TI), we want at first analyze which sectors are exempted.
 For more information about CI and TI, you can check the info-box below.
 
-#< info "TI and CI"
+#< info "CI and TI"
 The carbon intensity (CI) is the sum of direct and indirect costs of permit auctioning divided by gross value added of a sector. It represents the cost burden inflicted by full auctioning.
 The trade intensity (TI) on the other hand is calculated as "the ratio between the total value of exports to third countries plus the value of imports from third countries and the total market size for the Community (annual turnover plus total imports from third countries)" (Directive 2009/29/EC).
 #>
@@ -84,7 +83,7 @@ The trade intensity (TI) on the other hand is calculated as "the ratio between t
 
 ### About the Data
 
-The data for this paper provides us with very unique firm-level dataset since it combines classical economic performance measures from the ORBIS database, data on CO2 emissions from the EU ETS and interview data obtained by interviewing manufacturing firms from the following six European countries: Belgium, France, Germany, Hungary, Poland and United Kingdom. This interview data supplies us with a proxy for how vulnerable firms are to carbon pricing and we will use this source later to optimize the allocation of free permits.
+The data for this paper provides us with very unique firm-level dataset since it combines classical economic performance measures from the ORBIS database, data on CO2 emissions from the EU ETS and interview data obtained by interviewing manufacturing firms from the following six European countries: Belgium, France, Germany, Hungary, Poland and the United Kingdom. This interview data supplies us with a proxy for how vulnerable firms are to carbon pricing and we will use this source later to optimize the allocation of free permits.
 
 
 ### On the problem set itself
@@ -128,11 +127,11 @@ parts:
 
 
 ## Exercise 2 - Exempted Firms
-In this exercise we want to find out more about the sectors that are exempted. So first of all we load the data necessary for this purpose. To do so we use the command `read.dta()` from the package `foreign` in order to load the dataset `basicdata.dta` into our workspace, which contains firm-level data on manufacturing firms in the EU ETS. Remember to download the file `basicdata.dta` from where you downloaded this problem set and save it in your working directory.
+In this exercise we want to find out more about the sectors that are exempted. First of all we load the data necessary for this purpose. To do so we use the command `read.dta()` from the package `foreign` in order to load the dataset `basicdata.dta` into our workspace, which contains firm-level data on manufacturing firms in the EU ETS. Remember to download the file `basicdata.dta` from where you downloaded this problem set and save it in your working directory.
 
 #< info "read.dta()"
-The command `read.dta()` from the `foreign` package is used to read in a file in the dta format and save it into a data frame to work with it in R. In order to use it, you need to load the package `foreign` with the `library()`command.
-If you saved the data in the working directory, you can simply use the name of the data:
+The command `read.dta()` from the `foreign` package is used to read in a file in the dta format and save it into a data frame to work with in R. In order to use it, you need to load the package `foreign` with the `library()`command.
+If you saved the data in the working directory, you can call it simply by using its name:
 
 ```{r "2_",eval=FALSE}
 library(foreign)
@@ -162,7 +161,7 @@ stat.ethz.ch/R-manual/R-devel/library/foreign/html/read.dta.html</a>.
 
 **Task:**
 
-Load the library `foreign` and load the dataset `basicdata.dta` with the `read.dta()`command. Save the data in the variable `basic`. If you need further information, just check the info-box above about the `read.dta()` command. Click `check` after you finished.
+Load the library `foreign` and load the dataset `basicdata.dta` with the `read.dta()` command. Save the data in the variable `basic`. If you need further information, just check the info-box above about the `read.dta()` command. Click `check` after you finished.
 
 ```{r "2_1"}
 #< task
@@ -175,14 +174,14 @@ library(foreign)
 basic = read.dta("basicdata.dta")
 ```
 
-Now with the data loaded, we want to see how the sectors spread around carbon and trade intensity. Therefore we need to group the firms by their NACE four-digit level code (a system to classify industry) and calculate their average trade and carbon intensity as well as their sum of installations. The variables we need for this task are `sec4dig`,`vv.xxx0`, `tt.xxx0`,`ninstallations` and `nonmanufactoring`. You can check the info-box fur further information on this variables.
+Now with the data loaded, we want to see how the sectors spread around carbon and trade intensity. Therefore we need to group the firms by their NACE four-digit level code (a system to classify industry) and calculate their average trade and carbon intensity as well as their sum of installations. The variables we need for this task are `sec4dig`, `vv.xxx0`, `tt.xxx0`, `ninstallations` and `nonmanufactoring`. You can check the info-box for further information on these variables.
 
 #< info "Variables of interest 1"
 - `sec4dig`: The NACE four-digit level code of a firm
 - `vv_xxx0`: Represents the carbon intensity of the firm (CI)
 - `tt_xxx0`: Represents the trade intensity of the firm (TI)
 - `ninstallations`: The number of installations
-- `nonmanufacturing`: Indicator if a firm is manufacturing. 1 if not manufacturing, NA if manufacturing
+- `nonmanufacturing`: Indicator if a firm is manufacturing. '1' if not manufacturing, 'NA' if manufacturing
 #>
 
 First we want to look at some basic characteristics of the variables we are interested in.
@@ -203,7 +202,7 @@ stargazer(data.frame(basic$tt_xxx0,basic$vv_xxx0,basic$ninstallations),
 ```
 <br>
 
-One of the most noticeable properties of the data is the fact that we have different number of observations for the variables (here reported in the row `N`). This means that we have missing data for some observations and we first need to clean up our data set in order to get rid of this missing data problem.
+One of the most noticeable properties of the data is the fact that we have a different number of observations for each of these variables (here reported in the row `N`). This means that we have missing data for some observations and we first need to clean up our data set in order to get rid of this missing data problem.
 
 
 **Task:**
@@ -228,11 +227,11 @@ Ex1=filter(basic, is.na(sec4dig)==FALSE,
   Well done cleaning up the data.
 #>
 
-Now it's time to group our firms by their NACE four-digit level and calculate the averages and sums. To accomplish this task you will learn about the `transmute()`and `group_by()` routines from the package `dplyr`.
+Now it's time to group our firms by their NACE four-digit level and calculate the averages and sums. To accomplish this task you will learn about the `transmute()` and `group_by()` routines from the package `dplyr`.
 
 **Task:**
 
-Load the library `dplyr` and group the dataset `Ex1`by its NACE four-digit level stored in `sec4dig` with the `group_by()` command. Save this grouping in the variable `by_nace`.
+Load the library `dplyr` and group the dataset `Ex1` by its NACE four-digit level stored in `sec4dig` with the `group_by()` command. Save this grouping in the variable `by_nace`.
 If you are not familiar with the `group_by()` command, go and check the info-box below.
 
 #< info "group_by()"
@@ -243,7 +242,8 @@ library(dplyr)
 My_Grouping=group_by(MyData,MyAttribute)
 ```
 
-The biggest advantage of this command is the possibility to apply other commands (like `transmute`, `summarise`,...) on it with getting the results automatically applied by group. We' ll use this fact in the next task.
+The biggest advantage of this command is the possibility to apply other commands (like `transmute`, `summarise`,...) on it with getting the results automatically applied by group. We' ll use this feature in the next task.
+
 You need more information on `group_by()`? Go ahead and check 
 <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html" target = "_blank"> cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html</a>.
 #>
@@ -263,7 +263,7 @@ With the grouping `by_nace` we are able to do calculations for firms of the same
 
 **Task:**
 
-Use the `summarise()` command on your grouping `by_nace ` and calculate the following:
+Use the `summarize()` command on your grouping `by_nace ` and calculate the following:
 - the mean of `vv_xxx0` and save it into `CI.mean`. Add `na.rm=TRUE` in the mean command.
 - the mean of `tt_xxx0` and save in into `TI.mean`. Add `na.rm=TRUE` in the mean command.
 - the sum of `ninstallations` and save in into `sum.installations`
@@ -271,14 +271,14 @@ Use the `summarise()` command on your grouping `by_nace ` and calculate the foll
 Save the results into the variable `NACE`.
 
 #< info "summarize()"
-With the `summarize()` command we are able to use aggregate functions very effective especially on grouped data. If we want for example calculate the number of entries in each grouped specified in `MyGrouping` this can be done as follows:
+With the `summarize()` command we are able to use aggregate functions very effective especially on grouped data. If for example we want to calculate the number of entries in each group specified in `MyGrouping` this can be done as follows:
 
 ```{r "2__4",eval=FALSE}
 summarize(MyGrouping, entries = n())
 ```
 
 Other possible aggregate functions are: `mean()`, `sd()`, `sum()`, `min()`, `max()`,...
-For later use you can also save your new data set as follows:
+For later use you can also save your new data set in a variable as follows:
 
 ```{r "2__5",eval=FALSE}
 MySummary=summarize(MyGrouping, entries = n())
@@ -320,7 +320,7 @@ As you can see, for each NACE four-digit sector we have their means of CI and TI
 Let's look up the values for a specified NACE-sector. For example the NACE 4-digit code `2051` stands for a "Manufacture of explosives". If we want to get the values, you could simply look through the full dataset, but this wouldn't be very efficient. An easier way te get the data is to use the `filter()` command from the package `dplyr` as you have seen earlier. If you're not familiar with this function, check the info-box.
 
 #< info "filter()"
-The `filter()` function of the `dplyr` package can be used to generate a subset of a dataset by checking for a specified criteria. If for example our dataset `MyData` has a row `postcode` with all postcodes from Germany but we are only interested in the postcode `89075` we can filter the data in the following way
+The `filter()` function of the `dplyr` package can be used to generate a subset of a dataset by checking for a specified criteria. If for example our dataset `MyData` has a row `postcode` with all postcodes from Germany but we are only interested in the postcode `89075` we can filter the data in the following way:
 
 ```{r "2__6",eval=FALSE}
 filter(MyData,postcode=="89075")
@@ -340,14 +340,14 @@ We use the `filter()` command to get the values of `CI.mean`, `TI.mean` and `sum
 # Uncomment the the following code and fill out the ???
 # stargazer(round(filter(???,sec4dig=="???"),2),type="html",
 #         summary=FALSE,rownames = FALSE,
-#         title="Sector 2051", digits=4))
+#         title="Sector 2051"))
 #>
 stargazer(round(filter(NACE,sec4dig=="2051"),2), type="html",
           summary=FALSE, rownames = FALSE, title="Sector 2051")
 ```
 <br>
 
-So the sector `2051: Manufacture of explosives` consists of 17 installations (in our Dataset) and has a CI of `2.50` and a TI of `26.03`. Now back to our dataset `NACE`. We can now use the package `ggplot2` which gives us a nice set of functions to visualize data in order to get a first insight of our data.
+So the sector `2051: Manufacture of explosives` consists of 17 installations (in our Dataset) and has a CI of `2.50` and a TI of `26.03`. Now back to our dataset `NACE`. We can now use the package `ggplot2` which gives us a nice set of functions for visualization in order to get a first insight of our data.
 So let's plot each NACE sector on a graph with TI on the x-axis and CI on the y-axis. Moreover, let each circle be proportional to the number of installations in this sector.
 
 **Task:**
@@ -361,14 +361,14 @@ library(ggplot2)
 
 # Define which data you want to use and its aesthetics.
 # In our case the x and y arguments
-MyPlot =ggplot(NACE,aes(x=TI.mean,y=CI.mean))
+MyPlot=ggplot(NACE,aes(x=TI.mean,y=CI.mean))
 
 # With geom_point we define that we want a scatter plot, 
 # size allows us to give every sector their number of installations
 # scale_size_area defines the maximal size of a point
 # With theme we turn of the legend
 # And with scale_x/scale_y we define our x- and y- axis
-MyPlot= MyPlot+geom_point(aes(size=sum.installations),shape=1,alpha=0.8)+
+MyPlot=MyPlot+geom_point(aes(size=sum.installations),shape=1,alpha=0.8)+
   scale_size_area(max_size=20)+
   theme(legend.position="none")+
   scale_x_continuous(limits=c(0,100),name="Trade intensity")+
@@ -383,7 +383,7 @@ As we can see there are many NACE sectors located in the lower left corner with 
 - TI or CI is greater than 30%
 - TI is greater than 10% and CI greater than 5%
 
-If one if these criteria are met, a sector is considered to have risk of carbon leakage. For our regarded sector `2051: Manufacture of explosives` this means no exempting. Now let's add these thresholds to our plot to see if there are many sectors considered to be at a high risk of relocation.
+If one of these criteria are met, a sector is considered to have risk of carbon leakage. For our regarded sector `2051: Manufacture of explosives` this means no exempting. Now let's add these thresholds to our plot to see if there are many sectors considered to be at a high risk of relocation.
 
 **Task:**
 
@@ -434,7 +434,7 @@ MyPlot+geom_hline(yintercept=30,color="red")+
       
 ```
 
-With the these thresholds now being set, we want to use the same classification for the sectors as in the underlying paper:
+With these thresholds now being set, we want to use the same classification for the sectors as in the underlying paper:
 - $\textrm{Group A: } CI \gt 30$, i.e. all above the red line, representing sectors with a high carbon intensity
 - $\textrm{Group B: } TI \gt 30 \ \& \  CI \lt 30$, i.e. all on the right side of the green line but under the red line, representing sectors with high trade intensity and mediocre carbon intensity
 - $\textrm{Group C: } 5 \lt CI \lt 30 \ \& \ 10 \lt TI \lt 30$, i.e. the square between all lines, representing sectors with mediocre trade and carbon intensity
@@ -831,7 +831,7 @@ Although the UK has an obvious peak in observations we have overall a nice base 
 
 # Differences by country
 
-In this part we want to investigate if there are any major differences in the vulnerability score for different countries. For this task we use the variable `country` in our dataset which represents the origin of each firm. In the previous part we already grouped our dataset by this variable, so we can direct move on to calculate the average VS in each country.
+In this part we want to investigate if there are any major differences in the vulnerability score for different countries. For this task we use the variable `country` in our dataset which represents the origin of each firm. In the previous part we already grouped our dataset by this variable, so we can directly move on to calculate the average VS in each country.
 
 **Task:**
 
@@ -901,7 +901,7 @@ Yo ho ho, nice plot!
 
 # Differences by sector
 
-Like to the previous part we want to find out if some sectors are more affected to carbon pricing than others. For this task our dataset contains the variable `mcetsdig`, which assigns different sectors to each firm. Let's see what characteristics `mcetsdig` does have.
+Like to the previous part we want to find out if some sectors are more affected by carbon pricing than others. For this task our dataset contains the variable `mcetsdig`, which assigns different sectors to each firm. Let's see what characteristics `mcetsdig` does have.
 
 **Task:**
 
@@ -1007,7 +1007,7 @@ Since we want to use the VS to have an estimate on the vulnerability of a firm t
 - `ghgtargets_score_z`: Score for efforts put into achieving GHG targets
 #>
 
-Let's first formulate our expectations to this variables:
+Let's first formulate our expectations to these variables:
 - `costpass_percent_Z`: Our VS should be negative correlated to a high ability to pass-through the costs to the customers, since this means the firm can pass the cost of carbon pricing and therefore protect themselves from the negative effects of the additional costs.
 - `fp_competitorsMeuOcomp_z`: It is plausible that this should be positive correlated since high share of non-EU competitors that are not effected by the carbon pricing policy doesn't allow the regulated firm to pass the costs to their customers since this would decrease their international competitiveness.
 - `emonitor.score.z` and `ghgtargets_score_z`: Both should be positive correlated to the VS since firms that have high disadvantages due to carbon pricing are highly urged to monitor and decrease their emissions as well as their needed permits.
@@ -1078,7 +1078,7 @@ stargazer(costpass.ets.rob, nonEU.ets.rob,
 ```
 <br>
 
-These results confirm the expectations we discussed above with a remarkable high significance (in the case of all firms) of at least at the 5% level. Although the statistical significance is for some variables lower if we only consider EU ETS firms, we can conclude that the VS is a quite consistent estimator for the vulnerability of a firm to carbon pricing.
+These results confirm the expectations we discussed above with a remarkable high significance (in the case of all firms) of at least at the 1% level. Although the statistical significance is for some variables lower if we only consider EU ETS firms, we can conclude that the VS is a quite consistent estimator for the vulnerability of a firm to carbon pricing.
 
 
 Before we set up our model for the optimal permit allocation we finish this exercise with a quiz.
@@ -1118,6 +1118,8 @@ parts:
 
 #< award "Professional Quizzer"
 
+Well done, you solved the fourth quiz in this problem set!
+
 #>
 
 
@@ -1156,7 +1158,7 @@ s.t. \quad &s_{i+1}=s_i-q_i \\\\
 \end{align}$$
 where $s_i$ denotes the amount of permits left when reaching firm $i$ in the sequence. This formulation and an arbitrary ordering of firms yields us the Bellman equation
 $$V_i(s_i)=\min_{0 \le q_i \le s_i} \left[ r_i(q_i)+V_{i+1}(s_i-q_i) \right]$$ 
-for our program, where $V_i()$ is the so-called value function and $V_{i+1}(s_i-q_i)$ is the value of leaving $s_i-q_i$ permits to all firms left in the sequence (see Sniedovich (1992, p.303 and following)). We can solve this system by beginning with the last firm $N$ in the sequence which function is given by $V_N(s_N)=F_N(-\pi_N(q_N))(\alpha l_N + (1+\alpha) e_N)$ and then iterate backwards to get the optimal $q_i$'s. 
+for our program, where $V_i()$ is the so-called value function and $V_{i+1}(s_i-q_i)$ is the value of leaving $s_i-q_i$ permits to all firms left in the sequence (see Sniedovich (1992, p. 303 and following)). We can solve this system by beginning with the last firm $N$ in the sequence which function is given by $V_N(s_N)=F_N(-\pi_N(q_N))(\alpha l_N + (1+\alpha) e_N)$ and then iterate backwards to get the optimal $q_i$'s. 
 
 In the same fashion we can derive a recursive formulation of the dual program $(2)$. By inverting the relocation risk $r_i(q_i)$ of an individual firm $i$ we get $q_i=\pi_i^{-1}\left[-F_i^{-1}\left(\frac{r_i}{\alpha l_i + (1-\alpha)e_i}\right)\right]$. We can again plug that into the dual program $(2)$ and rewrite it as Bellman equation:
 $$W_i(s_i)=\min_{0 \le r_i \le s_i} \pi_i^{-1}\left[-F_i^{-1}\left(\frac{r_i}{\alpha l_i + (1-\alpha)e_i}\right)\right] + W_{i+1}(s_i-r_i) $$
@@ -1254,7 +1256,7 @@ firm = read.dta("optimal_firm_done.dta")
 In this dataset, we have standard information about the firms that have taken part in the interview. Moreover we have information about the optimized free permits allocated to these firms under different assumptions. We want to investigate these assumption one after another. Starting of, we need our reference scenario. In the variable `allo` we have information about the costs of the free permits given away to the firms. We need to sum up theses costs as this will be our reference level.
 Additionally we sum up the costs of the permits given out for free in 5 other cases and divide them by our reference scenario. These five cases are stored in the following variables:
 - `opti_emp_allo_cost`: We fixed the risk of job losses ($\alpha$ = 1) at the level resulting from grandfathering and then optimized to calculate the cost of the free permits given out to each firm
-- `opti_co2_allo_cost`: This time we fixed the risk of emission leakage ($\alpha$=1) at the level resulting from grandfathering
+- `opti_co2_allo_cost`: This time we fixed the risk of emission leakage ($\alpha$=0) at the level resulting from grandfathering
 - `bench`: The cost of the free permits given out under the benchmark-decision
 - `opti_emp_bench_cost`: The cost of free permits given out by fixing the job risk at the level resulting from benchmarking
 - `opti_co2_bench_cost`: The cost of the free permits given out by fixing the risk of emission leakage at the level resulting from benchmarking
@@ -1593,13 +1595,13 @@ Now that we are finished with the optimal permit allocation we want to recap in 
 
 ## Exercise 6 - Conclusion
 
-In our problem set we were interested in finding out how governments can optimally subsidize firms that suffer in international competitiveness, due to laws that regulate negative aspects of the industry. With the argument of these firms that they have to relocate to unregulated countries the governments are forced to intervene in the market, since relocation of firms means job losses, loss of taxes and emissions which were in our case the aspect we wanted to regulate. Therefore we derived a model that minimizes the expected damage emerging through relocation. This model distributes subsidies across firms or sectors as to equalize their impact on the objective function of the government. Subsequently we compared our model to the EU ETS, the biggest cap-and-trade scheme for emissions, where subsidies have been given out as free permits in order to decrease the risk of relocation. In a next step found out, that we could achieve large reductions in job risk and emission leakage in comparison with the actual compensation rules. Moreover, we also stated that our model needs far less free permits to maintain the same risk of relocation as through the current rules. This also implies a higher auction revenue since more permits would be traded in auctions and therefore we could minimize that social cost of the policy.
+In our problem set we were interested in finding out how governments can optimally subsidize firms that suffer in international competitiveness, due to laws that regulate negative aspects of the industry. With the argument of these firms that they have to relocate to unregulated countries the governments are forced to intervene in the market, since relocation of firms means job losses, loss of taxes and emissions which were in our case the aspect we wanted to regulate. Therefore we derived a model that minimizes the expected damage emerging through relocation. This model distributes subsidies across firms or sectors as to equalize their impact on the objective function of the government. Subsequently we compared our model to the EU ETS, the biggest cap-and-trade scheme for emissions, where subsidies have been given out as free permits in order to decrease the risk of relocation. In a next step we found out, that we could achieve large reductions in job risk and emission leakage in comparison with the actual compensation rules. Moreover, we also stated that our model needs far less free permits to maintain the same risk of relocation as through the current rules. This also implies a higher auction revenue since more permits would be traded in auctions and therefore we could minimize that social cost of the policy.
 
-While our approach takes the objectives stated by the EU ETS (prevention of carbon leakage and job losses through relocation) and achieves significant improvements over that actual allocation rules it can be debatable if these are the only objectives of the policy and therefore the free permits were given out more generous. It may be plausible that this might have happened in order to build a stronger political support by subsidizing carbon and trade intensive sectors in the beginning of the cap-and-trade system. Moreover since the data we use for the estimates of the relocation probability originates from interview data these values can be manipulated from the firms in order to fake a higher relocation probability and therefore get more free permits if we would apply this scheme to the actual situation. A possible solution to this can be to derive a mechanism based on publicly available firm characteristics.
+While our approach takes the objectives stated by the EU ETS (prevention of carbon leakage and job losses through relocation) and achieves significant improvements over that actual allocation rules, it can be debatable if these are the only objectives of the policy and therefore the free permits were given out more generous. It may be plausible that this might have happened in order to build a stronger political support by subsidizing carbon and trade intensive sectors in the beginning of the cap-and-trade system. Moreover since the data we use for the estimates of the relocation probability originates from interview data, these values can be manipulated from the firms in order to fake a higher relocation probability and therefore get more free permits if we would apply this scheme to the actual situation. A possible solution to this can be to derive a mechanism based on publicly available firm characteristics.
 
-Independent of this facts our results show that further researches in the topic of optimal permit allocation and in the relocation propensities of firms will be beneficial for the government's objectives as well as for the tax payers. More generally speaking the approach of optimal permit allocation can be adopted to a variety of scenarios where compensation schemes are in charge in order to establish a more efficient policy.
+Independent of this facts, our results show that further researches in the topic of optimal permit allocation and in the relocation propensities of firms will be beneficial for the government's objectives as well as for the tax payers. More generally speaking the approach of optimal permit allocation can be adopted to a variety of scenarios where compensation schemes are in charge in order to establish a more efficient policy.
 
-If you want to see the awards that you collected, just press `edit` and `check` afterwards. In total there were $10$ awards you could achieve.
+If you want to see the awards that you collected, just press `edit` and `check` afterwards. In total there were $12$ awards you could achieve.
 
 ```{r "6_"}
 #< task
@@ -1608,7 +1610,7 @@ awards()
 ```
 
 
-I hope you had fun solving this problem set. If so, make sure ou check 
+I hope you had fun solving this problem set. If so, make sure you check 
 <a href="https://github.com/skranz/RTutor" target = "_blank"> github.com/skranz/RTutor</a>
 for more interesting problem sets.
 
